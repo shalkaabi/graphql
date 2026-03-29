@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <h2>My GraphQL Profile</h2>
+    <button id="logoutBtn">Logout</button>
+  </nav>
+
+  <div class="profile-container">
+
+    <section class="card" id="basicInfo">
+      <h3>Basic Info</h3>
+      <p>ID: <span id="userId"></span></p>
+      <p>Login: <span id="userLogin"></span></p>
+    </section>
+
+    <section class="card" id="xpSection">
+      <h3>Total XP</h3>
+      <p id="totalXP"></p>
+    </section>
+
+    <section class="card" id="passFailSection">
+      <h3>PASS / FAIL Ratio</h3>
+      <p id="passCount"></p>
+      <p id="failCount"></p>
+    </section>
+
+    <section class="card stats">
+      <h3>Statistics</h3>
+
+      <!-- Graph 1 -->
+      <svg id="xpGraph" width="500" height="300"></svg>
+
+      <!-- Graph 2 -->
+      <svg id="ratioGraph" width="300" height="300"></svg>
+
+    </section>
+
+  </div>
+
+  <script src="js/profile.js"></script>
+</body>
+</html>

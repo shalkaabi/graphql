@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>My Profile</title>
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <script src="shared.js" defer></script>
 </head>
-<body>
-
+<body class="user-mode">
   <nav class="navbar">
-    <h2>My GraphQL Profile</h2>
-    <button id="logoutBtn">Logout</button>
+    <h2>GraphQL</h2>
+    <div class="navbar-right">
+      <span class="welcome-text" id="welcomeText">Welcome, Guest</span>
+      <button id="accountBtn" title="Account"><i class='bx bx-user'></i></button>
+      <button id="logoutBtn">Logout</button>
+    </div>
   </nav>
 
   <div class="profile-container">
-
     <section class="card" id="basicInfo">
       <h3>Basic Info</h3>
-      <p>ID: <span id="userId"></span></p>
-      <p>Login: <span id="userLogin"></span></p>
+      <p>ID: <span id="userId">user123</span></p>
+      <p>Login: <span id="userLogin">Loading...</span></p>
     </section>
 
     <section class="card" id="xpSection">
@@ -26,24 +30,68 @@
     </section>
 
     <section class="card" id="passFailSection">
-      <h3>PASS / FAIL Ratio</h3>
+      <h3>Pass/Fail Ratio</h3>
+      <p id="ratioDisplay"></p>
       <p id="passCount"></p>
       <p id="failCount"></p>
     </section>
 
     <section class="card stats">
       <h3>Statistics</h3>
-
-      <!-- Graph 1 -->
       <svg id="xpGraph" width="500" height="300"></svg>
-
-      <!-- Graph 2 -->
       <svg id="ratioGraph" width="300" height="300"></svg>
-
     </section>
-
   </div>
 
-  <script src="js/profile.js"></script>
+  <!-- Profile-specific JS for charts after shared.js -->
+  <script>
+    // Draw charts after data loaded
+    function drawCharts() {
+      drawXPBar();
+      drawRatioPie();
+    }
+
+    function drawXPBar() {
+      const svg = document.getElementById('xpGraph');
+      svg.innerHTML = '';
+      const maxXP = 2000;
+      const currentXP = 1564;
+      const barWidth = 400;
+      const barHeight = 30;
+      const progress = (currentXP / maxXP) * 100;
+
+      // Background bar
+      svg.innerHTML = `
+        <rect x="50" y="50" width="${barWidth}" height="${barHeight}" rx="15" fill="#e0e0e0" stroke="#ccc" stroke-width="2"/>
+        <rect x="50" y="50" width="${(progress/100)*barWidth}" height="${barHeight}" rx="15" fill="linear-gradient(90deg, #4CAF50, #8BC34A)" stroke="#4CAF50" stroke-width="2"/>
+        <text x="60" y="70" font-size="16" font-weight="bold" fill="#333">${currentXP}/${maxXP} XP</text>
+        <text x="55" y="95" font-size="14" fill="#666">${Math.round(progress)}%</text>
+      `;
+    }
+
+    function drawRatioPie() {
+      const svg = document.getElementById('ratioGraph');
+      svg.innerHTML = '';
+      const passes = 48;
+      const fails = 9;
+      const total = passes + fails;
+      const r = 120;
+      const cx = 160, cy = 160;
+
+      const passAngle = (passes / total) * 360 * Math.PI / 180;
+      const failAngle = (fails / total) * 360 * Math.PI / 180;
+
+      // Pass arc
+      svg.innerHTML += `<path d="M ${cx} ${cy} L ${cx + r * Math.cos(0)} ${cy + r * Math.sin(0)} A ${r} ${r} 0 ${(passAngle > Math.PI ? 1 : 0)} 1 ${cx + r * Math.cos(passAngle)} ${cy + r * Math.sin(passAngle)} Z" fill="#4CAF50" stroke="#fff" stroke-width="4"/>`;
+      // Fail arc
+      svg.innerHTML += `<path d="M ${cx} ${cy} L ${cx + r * Math.cos(passAngle)} ${cy + r * Math.sin(passAngle)} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(passAngle + failAngle)} ${cy + r * Math.sin(passAngle + failAngle)} Z" fill="#f44336" stroke="#fff" stroke-width="4"/>`;
+
+      svg.innerHTML += `<text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">${Math.round((passes/total)*100)}%</text>`;
+    }
+
+    // Init charts after shared
+    setTimeout(drawCharts, 100);
+  </script>
 </body>
 </html>
+

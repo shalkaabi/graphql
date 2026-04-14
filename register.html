@@ -1,66 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register | GraphQL Profile
-</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Register | GraphQL</title>
+<link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <script src="shared.js" defer></script>
 </head>
-
-<body>
-    <div class="wrapper">
-        <form action="">
-            <h1>Register</h1>
-            <div class="input-row">
-              <div class="input-box">
-                <input type="text" placeholder="First Name" required>
-                <i class='bx bxs-user'></i>
-              </div>
-              <div class="input-box">
-                <input type="text" placeholder="Last Name" required>
-                <i class='bx bxs-user'></i>
-              </div>
-            </div>
-            <div class="input-row">
-              <div class="input-box">
-                <input type="number" placeholder="Age" min="13" max="120" required>
-                <i class='bx bx-calendar'></i>
-              </div>
-              <div class="input-box">
-                <input type="text" placeholder="Gender" required>
-                <i class='bx bx-male-female'></i>
-              </div>
-            </div>
-            <div class="input-row">
-              <div class="input-box">
-                <input type="text" placeholder="Username" required>
-                <i class='bx bxs-user'></i>
-              </div>
-              <div class="input-box">
-                <input type="email" placeholder="Email" required>
-                <i class='bx bx-envelope'></i>
-              </div>
-            </div>
-            <div class="input-box">
-                <input type="password" placeholder="Password" required>
-                <i class='bx bxs-lock-alt'></i>
-            </div>
-            <div class="input-box">
-                <input type="password" placeholder="Confirm Password" required>
-                <i class='bx bxs-lock-alt'></i>
-            </div>
-
-            <button type="submit" class="btn">Register</button>
-
-            <div class="register-link">
-                <p> Already have an account? <a href="index.html">Login</a></p>
-            </div>
-        </form>
+<body class="guest-mode">
+  <nav class="navbar">
+    <h2>GraphQL</h2>
+    <div class="navbar-right">
+      <span class="welcome-text" id="welcomeText">Welcome, Guest</span>
+      <button id="accountBtn" title="Account"><i class='bx bx-user'></i></button>
+      <button id="logoutBtn">Logout</button>
     </div>
+  </nav>
+
+  <div class="wrapper">
+    <form action="">
+      <h1>Register</h1>
+      <div class="input-row">
+        <div class="input-box">
+          <input type="text" placeholder="First Name" required>
+          <i class='bx bxs-user'></i>
+        </div>
+        <div class="input-box">
+          <input type="text" placeholder="Last Name" required>
+          <i class='bx bxs-user'></i>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-box">
+          <input type="number" placeholder="Age" min="13" max="120" required>
+          <i class='bx bx-calendar'></i>
+        </div>
+        <div class="input-box">
+          <input type="text" placeholder="Gender" required>
+          <i class='bx bx-male-female'></i>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-box">
+          <input type="text" placeholder="Username" required>
+          <i class='bx bxs-user'></i>
+        </div>
+        <div class="input-box">
+          <input type="email" placeholder="Email" required>
+          <i class='bx bx-envelope'></i>
+        </div>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Password" required>
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Confirm Password" required>
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <button type="submit" class="btn">Register</button>
+      <div class="register-link">
+        <p>Already have an account? <a href="index.html">Login</a></p>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const user = localStorage.getItem('user') || 'Guest';
+      const welcomeText = document.getElementById('welcomeText');
+      if (welcomeText) welcomeText.textContent = `Welcome, ${user}`;
+
+      // Form submit - now handled by shared + custom
+      const form = document.querySelector('form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const usernameInput = document.querySelector('input[placeholder="Username"]');
+          const username = usernameInput ? usernameInput.value || 'User' : 'User';
+          localStorage.setItem('user', username);
+          document.body.classList.remove('guest-mode');
+          alert(`Registered as ${username}! Redirecting to profile...`);
+          window.location.href = 'profile.html';
+        });
+      }
+
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          localStorage.removeItem('user');
+          document.body.classList.add('guest-mode');
+          if (welcomeText) welcomeText.textContent = 'Welcome, Guest';
+          alert('Logged out!');
+        });
+      }
+
+      const accountBtn = document.getElementById('accountBtn');
+      if (accountBtn) {
+        accountBtn.addEventListener('click', function() {
+          alert('Account settings - demo!');
+        });
+      }
+    });
+  </script>
 </body>
 </html>
 

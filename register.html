@@ -7,7 +7,7 @@
   <title>Register | GraphQL</title>
 <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
-  <script src="shared.js" defer></script>
+
 </head>
 <body class="guest-mode">
   <nav class="navbar">
@@ -67,44 +67,7 @@
     </form>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const user = localStorage.getItem('user') || 'Guest';
-      const welcomeText = document.getElementById('welcomeText');
-      if (welcomeText) welcomeText.textContent = `Welcome, ${user}`;
 
-      // Form submit - now handled by shared + custom
-      const form = document.querySelector('form');
-      if (form) {
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const usernameInput = document.querySelector('input[placeholder="Username"]');
-          const username = usernameInput ? usernameInput.value || 'User' : 'User';
-          localStorage.setItem('user', username);
-          document.body.classList.remove('guest-mode');
-          alert(`Registered as ${username}! Redirecting to profile...`);
-          window.location.href = 'profile.html';
-        });
-      }
-
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-          localStorage.removeItem('user');
-          document.body.classList.add('guest-mode');
-          if (welcomeText) welcomeText.textContent = 'Welcome, Guest';
-          alert('Logged out!');
-        });
-      }
-
-      const accountBtn = document.getElementById('accountBtn');
-      if (accountBtn) {
-        accountBtn.addEventListener('click', function() {
-          alert('Account settings - demo!');
-        });
-      }
-    });
-  </script>
 </body>
 </html>
 

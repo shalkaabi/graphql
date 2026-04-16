@@ -5,11 +5,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register | GraphQL</title>
-<link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 </head>
+
 <body class="guest-mode">
+
   <nav class="navbar">
     <h2>GraphQL</h2>
     <div class="navbar-right">
@@ -20,54 +22,63 @@
   </nav>
 
   <div class="wrapper">
-    <form action="">
+
+    <!-- 🔥 أضفنا novalidate -->
+    <form id="registerForm" novalidate>
       <h1>Register</h1>
+    
       <div class="input-row">
         <div class="input-box">
-          <input type="text" placeholder="First Name" required>
-          <i class='bx bxs-user'></i>
+          <input id="firstName" type="text" placeholder="First Name">
         </div>
         <div class="input-box">
-          <input type="text" placeholder="Last Name" required>
-          <i class='bx bxs-user'></i>
+          <input id="lastName" type="text" placeholder="Last Name">
         </div>
       </div>
+    
       <div class="input-row">
         <div class="input-box">
-          <input type="number" placeholder="Age" min="13" max="120" required>
-          <i class='bx bx-calendar'></i>
+          <input id="age" type="number" placeholder="Age" min="13" max="120">
         </div>
         <div class="input-box">
-          <input type="text" placeholder="Gender" required>
-          <i class='bx bx-male-female'></i>
+          <select id="gender">
+            <option value="" disabled selected>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
         </div>
       </div>
+    
       <div class="input-row">
         <div class="input-box">
-          <input type="text" placeholder="Username" required>
-          <i class='bx bxs-user'></i>
+          <input id="username" type="text" placeholder="Username">
         </div>
         <div class="input-box">
-          <input type="email" placeholder="Email" required>
-          <i class='bx bx-envelope'></i>
+          <input id="email" type="email" placeholder="Email">
         </div>
       </div>
+    
       <div class="input-box">
-        <input type="password" placeholder="Password" required>
-        <i class='bx bxs-lock-alt'></i>
+        <input id="password" type="password" placeholder="Password">
       </div>
+    
       <div class="input-box">
-        <input type="password" placeholder="Confirm Password" required>
-        <i class='bx bxs-lock-alt'></i>
+        <input id="confirmPassword" type="password" placeholder="Confirm Password">
       </div>
+    
       <button type="submit" class="btn">Register</button>
+    
+      <p id="error" style="color:red;"></p>
+      <p id="success" style="color:green;"></p>
+    
       <div class="register-link">
         <p>Already have an account? <a href="index.html">Login</a></p>
       </div>
     </form>
+
   </div>
 
+  <script src="register.js"></script>
 
 </body>
 </html>
-

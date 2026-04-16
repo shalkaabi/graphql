@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 
 </head>
+
 <body class="guest-mode">
 
   <nav class="navbar">
@@ -21,27 +22,34 @@
   </nav>
 
   <div class="wrapper">
-    <form action="">
+    <form id="loginForm">
       <h1>Login</h1>
+    
       <div class="input-box">
-        <input type="text" placeholder="username" required>
+        <input id="username" type="text" placeholder="username or email" required>
         <i class="bx bxs-user"></i>
       </div>
+    
       <div class="input-box">
-        <input type="password" placeholder="password" required>
+        <input id="password" type="password" placeholder="password" required>
         <i class="bx bxs-lock-alt"></i>
       </div>
+    
       <div class="remember-forget">
         <label><input type="checkbox">Remember me</label>
         <a href="#">Forget password?</a>
       </div>
+    
       <button type="submit" class="btn">Login</button>
+    
+      <p id="error" style="color:red;"></p>
+    
       <div class="register-link">
-      <p>Don't have an account? <a href="register.html">Register</a></p>
+        <p>Don't have an account? <a href="register.html">Register</a></p>
       </div>
     </form>
   </div>
 
-
+  <script src="login.js"></script>
 </body>
 </html>

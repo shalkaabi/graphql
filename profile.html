@@ -3,48 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <title>My Profile</title>
-<link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 </head>
+
 <body class="user-mode">
+
   <nav class="navbar">
     <h2>GraphQL</h2>
     <div class="navbar-right">
       <span class="welcome-text" id="welcomeText">Welcome, Guest</span>
-      <button id="accountBtn" title="Account"><i class='bx bx-user'></i></button>
+      <button id="accountBtn" title="Account">
+        <i class='bx bx-user'></i>
+      </button>
       <button id="logoutBtn">Logout</button>
     </div>
   </nav>
 
   <div class="profile-container">
-    <section class="card" id="basicInfo">
+
+    <!-- USER INFO -->
+    <section class="card">
       <h3>Basic Info</h3>
-      <p>ID: <span id="userId">user123</span></p>
-      <p>Login: <span id="userLogin">Loading...</span></p>
+      <p>ID: <span id="userId"></span></p>
+      <p>Login: <span id="userLogin"></span></p>
     </section>
 
-    <section class="card" id="xpSection">
+    <!-- XP -->
+    <section class="card">
       <h3>Total XP</h3>
-      <p id="totalXP"></p>
+      <p id="totalXP">Loading...</p>
     </section>
 
-    <section class="card" id="passFailSection">
-      <h3>Pass/Fail Ratio</h3>
-      <p id="ratioDisplay"></p>
-      <p id="passCount"></p>
-      <p id="failCount"></p>
+    <!-- PASS / FAIL -->
+    <section class="card">
+      <h3>Pass / Fail Ratio</h3>
+      <p id="ratioDisplay">Loading...</p>
+      <p>Pass: <span id="passCount"></span></p>
+      <p>Fail: <span id="failCount"></span></p>
     </section>
 
+    <!-- STATISTICS -->
     <section class="card stats">
       <h3>Statistics</h3>
+
       <svg id="xpGraph" width="500" height="300"></svg>
       <svg id="ratioGraph" width="300" height="300"></svg>
+
     </section>
+
   </div>
 
-  <!-- Profile-specific JS for charts after shared.js -->
+  <script src="profile.js"></script>
 
 </body>
 </html>
-

@@ -4,17 +4,32 @@ if (!token) {
   window.location.href = "index.html";
 }
 
+// -------------------- JWT PARSER --------------------
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return null;
+  }
+}
+
+const decoded = parseJwt(token);
+const userId = decoded?.sub || decoded?.userId;
+
 // -------------------- GRAPHQL FETCH --------------------
 async function fetchGraphQL(query, variables = {}) {
   try {
-    const res = await fetch("https://DOMAIN/api/graphql-engine/v1/graphql", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
+    const res = await fetch(
+      "https://DOMAIN/api/graphql-engine/v1/graphql",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query, variables }),
+      }
+    );
 
     const data = await res.json();
     return data.data;
@@ -36,66 +51,74 @@ function setupLogout() {
   });
 }
 
-// -------------------- GET DATA --------------------
+// -------------------- GRAPHQL QUERY --------------------
 async function getData() {
   const query = `
-    {
-      user {
+    query ($userId: Int!) {
+      user(where: {id: {_eq: $userId}}) {
         id
         login
       }
 
-      transaction(where: {type: {_eq: "xp"}}, order_by: {createdAt: asc}) {
+      transaction(
+        where: {
+          userId: {_eq: $userId},
+          type: {_eq: "xp"}
+        }
+        order_by: {createdAt: asc}
+      ) {
         amount
         createdAt
       }
 
-      result {
+      result(where: {userId: {_eq: $userId}}) {
         grade
       }
     }
   `;
 
-  return await fetchGraphQL(query);
+  return await fetchGraphQL(query, { userId });
 }
 
-// -------------------- USER --------------------
+// -------------------- USER RENDER --------------------
 function renderUser(user) {
   document.getElementById("userId").textContent = user.id;
   document.getElementById("userLogin").textContent = user.login;
-  document.getElementById("welcomeText").textContent = `Welcome, ${user.login}`;
+  document.getElementById(
+    "welcomeText"
+  ).textContent = `Welcome, ${user.login}`;
 }
 
-// -------------------- XP --------------------
+// -------------------- XP CALC --------------------
 function calculateXP(transactions) {
   return transactions.reduce((sum, t) => sum + t.amount, 0);
 }
 
-// -------------------- XP GRAPH --------------------
+// -------------------- XP GRAPH DATA --------------------
 function prepareXP(transactions) {
   let total = 0;
-  const points = [];
-
-  transactions.forEach((t) => {
+  return transactions.map((t) => {
     total += t.amount;
-    points.push({ xp: total });
+    return {
+      xp: total,
+    };
   });
-
-  return points;
 }
 
+// -------------------- XP GRAPH --------------------
 function drawXPGraph(data) {
   const svg = document.getElementById("xpGraph");
-  if (!svg || !data.length) return;
+  if (!svg || !data || data.length === 0) return;
 
   svg.innerHTML = "";
 
   const width = 500;
   const height = 300;
 
-  const maxXP = Math.max(...data.map((d) => d.xp));
+  const maxXP = Math.max(...data.map((d) => d.xp), 1);
 
-  const stepX = data.length > 1 ? width / (data.length - 1) : width;
+  const stepX =
+    data.length > 1 ? width / (data.length - 1) : width;
 
   let path = "";
 
@@ -106,7 +129,10 @@ function drawXPGraph(data) {
     path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
   });
 
-  const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const line = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path"
+  );
 
   line.setAttribute("d", path);
   line.setAttribute("fill", "none");
@@ -116,7 +142,7 @@ function drawXPGraph(data) {
   svg.appendChild(line);
 }
 
-// -------------------- AUDITS --------------------
+// -------------------- AUDIT CALC --------------------
 function calculateRatio(results) {
   let pass = 0;
   let fail = 0;
@@ -137,7 +163,6 @@ function drawRatioGraph(pass, fail) {
   svg.innerHTML = "";
 
   const total = pass + fail || 1;
-
   const passAngle = (pass / total) * 360;
 
   const cx = 150;
@@ -195,13 +220,14 @@ async function init() {
 
   document.getElementById("passCount").textContent = ratio.pass;
   document.getElementById("failCount").textContent = ratio.fail;
-  document.getElementById("ratioDisplay").textContent =
-    `${ratio.pass} / ${ratio.fail}`;
+  document.getElementById(
+    "ratioDisplay"
+  ).textContent = `${ratio.pass} / ${ratio.fail}`;
 
   drawRatioGraph(ratio.pass, ratio.fail);
 
   setupLogout();
 }
 
-// -------------------- SAFE START --------------------
+// -------------------- START SAFE --------------------
 document.addEventListener("DOMContentLoaded", init);

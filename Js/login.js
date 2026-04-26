@@ -44,7 +44,13 @@ form.addEventListener('submit', async (e) => {
       data = await res.json();
     } else {
       const text = await res.text();
-      throw new Error(`Invalid response from server: ${text.substring(0, 100)}`);
+      // Some auth endpoints return the JWT as plain text instead of JSON
+      const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
+      if (jwtPattern.test(text.trim())) {
+        data = { token: text.trim() };
+      } else {
+        throw new Error(`Invalid response from server: ${text.substring(0, 100)}`);
+      }
     }
 
     if (!data || !data.token) {
@@ -61,4 +67,3 @@ form.addEventListener('submit', async (e) => {
     }
   }
 });
-

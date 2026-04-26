@@ -51,6 +51,15 @@
       <p>Fail: <span id="failCount">—</span></p>
     </section>
 
+    <!-- TOP LEVEL OVERVIEW GRAPH -->
+    <section class="card stats full-width">
+      <h3><i class='bx bx-radar'></i> Performance Overview</h3>
+      <div class="chart-wrap">
+        <svg id="topLevelGraph" viewBox="0 0 600 350" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="topLevelTooltip"></div>
+      </div>
+    </section>
+
     <!-- XP OVER TIME -->
     <section class="card stats full-width">
       <h3><i class='bx bx-line-chart'></i> XP Progress Over Time</h3>

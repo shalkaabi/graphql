@@ -107,6 +107,15 @@ async function loadData() {
     renderProjectXP(detailedData.xp || []);
     renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
+    // Top-level overview radar chart
+    drawTopLevelGraph(
+      detailedData.xp || [],
+      detailedData.up || [],
+      detailedData.down || [],
+      detailedData.result || [],
+      detailedData.progress || []
+    );
+
     setupLogout();
   } catch (err) {
     console.error('Profile load error:', err);
@@ -682,6 +691,176 @@ function drawPiscineGraph(pass, fail, exerciseAttempts) {
     text.textContent = item.label;
     svg.appendChild(text);
   });
+}
+
+// =================== GRAPH 5: TOP LEVEL RADAR ===================
+
+function drawTopLevelGraph(xpTransactions, upTransactions, downTransactions, results, progressData) {
+  const svg = document.getElementById('topLevelGraph');
+  const tooltip = document.getElementById('topLevelTooltip');
+  svg.innerHTML = '';
+
+  const width = 600;
+  const height = 350;
+  const cx = width / 2;
+  const cy = height / 2 + 10;
+  const maxR = 120;
+
+  // Calculate 5 metrics (0-100 scale)
+  const totalXP = xpTransactions.reduce((s, t) => s + t.amount, 0);
+  const xpScore = Math.min(totalXP / 50000, 1) * 100; // 50k XP = 100%
+
+  const up = upTransactions.reduce((s, t) => s + t.amount, 0);
+  const down = downTransactions.reduce((s, t) => s + t.amount, 0);
+  const auditScore = down > 0 ? Math.min((up / down) / 2, 1) * 100 : up > 0 ? 100 : 0;
+
+  let pass = 0, fail = 0;
+  results.forEach((r) => { if (r.grade >= 1) pass++; else fail++; });
+  const projectScore = pass + fail > 0 ? (pass / (pass + fail)) * 100 : 0;
+
+  const piscinePaths = ['piscine-go', 'piscine-js'];
+  let piscinePass = 0, piscineFail = 0;
+  [...progressData, ...results].forEach((item) => {
+    if (piscinePaths.some((p) => (item.path || '').includes(p))) {
+      if (item.grade >= 1) piscinePass++; else piscineFail++;
+    }
+  });
+  const piscineScore = piscinePass + piscineFail > 0 ? (piscinePass / (piscinePass + piscineFail)) * 100 : 0;
+
+  const uniqueProjects = new Set(xpTransactions.map((t) => t.object?.name || t.path)).size;
+  const diversityScore = Math.min(uniqueProjects / 20, 1) * 100; // 20 projects = 100%
+
+  const metrics = [
+    { label: 'XP Level', value: xpScore, raw: totalXP.toLocaleString() + ' XP' },
+    { label: 'Audit Perf', value: auditScore, raw: (down > 0 ? (up / down).toFixed(2) : up > 0 ? '∞' : '0') },
+    { label: 'Project Success', value: projectScore, raw: `${pass} / ${pass + fail}` },
+    { label: 'Piscine Success', value: piscineScore, raw: `${piscinePass} / ${piscinePass + piscineFail}` },
+    { label: 'Diversity', value: diversityScore, raw: uniqueProjects + ' projects' },
+  ];
+
+  const axes = metrics.length;
+
+  function polarRadar(idx, radius, offsetAngle = -90) {
+    const angle = (Math.PI * 2 * idx) / axes;
+    const rad = angle + (Math.PI * offsetAngle) / 180;
+    return {
+      x: cx + radius * Math.cos(rad),
+      y: cy + radius * Math.sin(rad),
+    };
+  }
+
+  // Background grid (concentric polygons)
+  const levels = 4;
+  for (let level = 1; level <= levels; level++) {
+    const r = (maxR / levels) * level;
+    let d = '';
+    for (let i = 0; i < axes; i++) {
+      const p = polarRadar(i, r);
+      d += (i === 0 ? 'M' : 'L') + ` ${p.x} ${p.y}`;
+    }
+    d += ' Z';
+    const poly = createSVG('polygon', {
+      points: d.replace(/M |L /g, '').replace(/Z/g, ''),
+      fill: 'none',
+      stroke: 'rgba(255,255,255,0.1)',
+      'stroke-width': '1',
+    });
+    // Build points string manually for polygon
+    let pts = '';
+    for (let i = 0; i < axes; i++) {
+      const p = polarRadar(i, r);
+      pts += `${p.x},${p.y} `;
+    }
+    poly.setAttribute('points', pts.trim());
+    svg.appendChild(poly);
+  }
+
+  // Axis lines
+  for (let i = 0; i < axes; i++) {
+    const p = polarRadar(i, maxR);
+    const line = createSVG('line', {
+      x1: cx, y1: cy, x2: p.x, y2: p.y,
+      stroke: 'rgba(255,255,255,0.15)', 'stroke-width': '1',
+    });
+    svg.appendChild(line);
+
+    // Labels
+    const labelP = polarRadar(i, maxR + 28);
+    const text = createSVG('text', {
+      x: labelP.x, y: labelP.y + 5,
+      'text-anchor': 'middle', fill: 'rgba(255,255,255,0.85)', 'font-size': '12', 'font-weight': '500',
+    });
+    text.textContent = metrics[i].label;
+    svg.appendChild(text);
+  }
+
+  // Data polygon
+  let dataPts = '';
+  const dataPoints = [];
+  for (let i = 0; i < axes; i++) {
+    const r = (metrics[i].value / 100) * maxR;
+    const p = polarRadar(i, r);
+    dataPts += `${p.x},${p.y} `;
+    dataPoints.push({ x: p.x, y: p.y, metric: metrics[i] });
+  }
+
+  const dataPoly = createSVG('polygon', {
+    points: dataPts.trim(),
+    fill: 'rgba(102, 126, 234, 0.35)',
+    stroke: '#667eea',
+    'stroke-width': '2.5',
+    'stroke-linejoin': 'round',
+    style: 'transition: all 0.8s ease;',
+  });
+  svg.appendChild(dataPoly);
+
+  // Animate data polygon scale-in
+  const initialScale = 0.1;
+  let initialPts = '';
+  for (let i = 0; i < axes; i++) {
+    const r = (metrics[i].value / 100) * maxR * initialScale;
+    const p = polarRadar(i, r);
+    initialPts += `${p.x},${p.y} `;
+  }
+  dataPoly.setAttribute('points', initialPts.trim());
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      dataPoly.setAttribute('points', dataPts.trim());
+    });
+  });
+
+  // Data points (circles) with tooltips
+  dataPoints.forEach((pt) => {
+    const circle = createSVG('circle', {
+      cx: pt.x, cy: pt.y, r: '5',
+      fill: '#fff', stroke: '#667eea', 'stroke-width': '2',
+      style: 'cursor:pointer; transition: all 0.2s ease;',
+    });
+    svg.appendChild(circle);
+
+    circle.addEventListener('mouseenter', () => {
+      circle.setAttribute('r', '8');
+      tooltip.innerHTML = `<strong>${pt.metric.label}</strong><br/>Score: ${Math.round(pt.metric.value)}%<br/>${pt.metric.raw}`;
+      tooltip.style.opacity = '1';
+    });
+    circle.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      tooltip.style.left = e.clientX - rect.left + 12 + 'px';
+      tooltip.style.top = e.clientY - rect.top - 12 + 'px';
+    });
+    circle.addEventListener('mouseleave', () => {
+      circle.setAttribute('r', '5');
+      tooltip.style.opacity = '0';
+    });
+  });
+
+  // Center label
+  const centerText = createSVG('text', {
+    x: cx, y: cy + 5,
+    'text-anchor': 'middle', fill: 'rgba(255,255,255,0.7)', 'font-size': '13', 'font-weight': '600',
+  });
+  centerText.textContent = 'Overview';
+  svg.appendChild(centerText);
 }
 
 // =================== INIT ===================

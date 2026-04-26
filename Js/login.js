@@ -23,8 +23,10 @@ form.addEventListener('submit', async (e) => {
 
     const res = await fetch(AUTH_URL, {
       method: 'POST',
+      mode: 'cors',
       headers: {
-        Authorization: `Basic ${credentials}`,
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/json',
       },
     });
 
@@ -35,16 +37,28 @@ form.addEventListener('submit', async (e) => {
       throw new Error(`Login failed (${res.status})`);
     }
 
-    const data = await res.json();
+    const contentType = res.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error(`Invalid response from server: ${text.substring(0, 100)}`);
+    }
 
     if (!data || !data.token) {
-      throw new Error('Invalid response from server');
+      throw new Error('Invalid response from server: missing token');
     }
 
     localStorage.setItem('token', data.token);
     window.location.href = 'profile.html';
   } catch (err) {
-    errorEl.textContent = err.message || 'Login failed. Please try again.';
+    if (err instanceof TypeError) {
+      errorEl.textContent = 'Network error. Please check your internet connection or try again later.';
+    } else {
+      errorEl.textContent = err.message || 'Login failed. Please try again.';
+    }
   }
 });
 

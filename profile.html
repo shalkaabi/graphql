@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>My Profile</title>
-
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
 </head>
@@ -25,37 +24,65 @@
 
     <!-- USER INFO -->
     <section class="card">
-      <h3>Basic Info</h3>
-      <p>ID: <span id="userId"></span></p>
-      <p>Login: <span id="userLogin"></span></p>
+      <h3><i class='bx bx-id-card'></i> Basic Info</h3>
+      <p>ID: <span id="userId">—</span></p>
+      <p>Login: <span id="userLogin">—</span></p>
     </section>
 
     <!-- XP -->
     <section class="card">
-      <h3>Total XP</h3>
-      <p id="totalXP">Loading...</p>
+      <h3><i class='bx bx-trophy'></i> Total XP</h3>
+      <p class="big-stat" id="totalXP">—</p>
+    </section>
+
+    <!-- AUDIT RATIO -->
+    <section class="card">
+      <h3><i class='bx bx-check-shield'></i> Audit Ratio</h3>
+      <p class="big-stat" id="auditRatio">—</p>
+      <p>Audits Done: <span id="auditUp">—</span></p>
+      <p>Audits Received: <span id="auditDown">—</span></p>
     </section>
 
     <!-- PASS / FAIL -->
     <section class="card">
-      <h3>Pass / Fail Ratio</h3>
-      <p id="ratioDisplay">Loading...</p>
-      <p>Pass: <span id="passCount"></span></p>
-      <p>Fail: <span id="failCount"></span></p>
+      <h3><i class='bx bx-bar-chart-alt-2'></i> Pass / Fail Ratio</h3>
+      <p class="big-stat" id="ratioDisplay">—</p>
+      <p>Pass: <span id="passCount">—</span></p>
+      <p>Fail: <span id="failCount">—</span></p>
     </section>
 
-    <!-- STATISTICS -->
+    <!-- XP OVER TIME -->
+    <section class="card stats full-width">
+      <h3><i class='bx bx-line-chart'></i> XP Progress Over Time</h3>
+      <div class="chart-wrap">
+        <svg id="xpGraph" viewBox="0 0 800 350" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="xpTooltip"></div>
+      </div>
+    </section>
+
+    <!-- AUDIT RATIO GRAPH -->
     <section class="card stats">
-      <h3>Statistics</h3>
+      <h3><i class='bx bx-pie-chart-alt'></i> Audit Distribution</h3>
+      <div class="chart-wrap">
+        <svg id="auditGraph" viewBox="0 0 360 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="auditTooltip"></div>
+      </div>
+    </section>
 
-      <svg id="xpGraph" width="500" height="300"></svg>
-      <svg id="ratioGraph" width="300" height="300"></svg>
-
+    <!-- PROJECT XP GRAPH -->
+    <section class="card stats">
+      <h3><i class='bx bx-bar-chart-square'></i> Top Projects by XP</h3>
+      <div class="chart-wrap">
+        <svg id="projectGraph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="projectTooltip"></div>
+      </div>
     </section>
 
   </div>
 
-  <script src="profile.js"></script>
+  <script src="Js/graphql.js"></script>
+  <script src="Js/profile.js"></script>
 
 </body>
 </html>
+

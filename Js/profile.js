@@ -4,6 +4,11 @@ if (!token) {
 }
 
 const decoded = parseJwt(token);
+if (!decoded || (decoded.exp && decoded.exp * 1000 <= Date.now())) {
+  localStorage.removeItem('token');
+  window.location.href = 'index.html';
+}
+
 const userId = decoded?.sub || decoded?.userId || decoded?.id;
 
 if (!userId) {
@@ -65,6 +70,17 @@ const detailedDataQuery = `
         type
       }
     }
+
+    progress(where: { userId: { _eq: $userId } }) {
+      grade
+      path
+      createdAt
+      updatedAt
+      object {
+        name
+        type
+      }
+    }
   }
 `;
 
@@ -89,6 +105,7 @@ async function loadData() {
     renderAudits(detailedData.up || [], detailedData.down || [], user.auditRatio);
     renderResults(detailedData.result || []);
     renderProjectXP(detailedData.xp || []);
+    renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
     setupLogout();
   } catch (err) {
@@ -155,6 +172,47 @@ function renderProjectXP(xpTransactions) {
     .slice(0, 10);
 
   drawProjectGraph(sorted);
+}
+
+function renderPiscineStats(progressData, resultData) {
+  // Combine progress and result data for piscine entries
+  const piscinePaths = ['piscine-go', 'piscine-js'];
+  const piscineItems = [];
+
+  [...progressData, ...resultData].forEach((item) => {
+    const path = item.path || '';
+    const isPiscine = piscinePaths.some((p) => path.includes(p));
+    if (isPiscine) {
+      piscineItems.push(item);
+    }
+  });
+
+  // Calculate stats
+  let pass = 0;
+  let fail = 0;
+  const exerciseAttempts = {};
+
+  piscineItems.forEach((item) => {
+    const name = item.object?.name || item.path?.split('/').pop() || 'Unknown';
+    if (!exerciseAttempts[name]) {
+      exerciseAttempts[name] = { attempts: 0, pass: 0, fail: 0 };
+    }
+    exerciseAttempts[name].attempts++;
+    if (item.grade >= 1) {
+      pass++;
+      exerciseAttempts[name].pass++;
+    } else {
+      fail++;
+      exerciseAttempts[name].fail++;
+    }
+  });
+
+  const total = pass + fail;
+  document.getElementById('piscinePass').textContent = pass;
+  document.getElementById('piscineFail').textContent = fail;
+  document.getElementById('piscineTotal').textContent = total;
+
+  drawPiscineGraph(pass, fail, exerciseAttempts);
 }
 
 // =================== SVG UTILITIES ===================
@@ -534,7 +592,98 @@ function drawProjectGraph(projectData) {
   animateBars(bars, 900);
 }
 
+// =================== GRAPH 4: PISCINE STATS ===================
+
+function drawPiscineGraph(pass, fail, exerciseAttempts) {
+  const svg = document.getElementById('piscineGraph');
+  const tooltip = document.getElementById('piscineTooltip');
+  svg.innerHTML = '';
+
+  const total = pass + fail || 1;
+  const passAngle = (pass / total) * 360;
+
+  const cx = 180;
+  const cy = 130;
+  const r = 90;
+  const innerR = 55;
+
+  function polar(cx, cy, r, angle) {
+    const rad = (Math.PI * angle) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+
+  function donutArc(start, end, color, label, value) {
+    const p1 = polar(cx, cy, r, start - 90);
+    const p2 = polar(cx, cy, r, end - 90);
+    const p3 = polar(cx, cy, innerR, end - 90);
+    const p4 = polar(cx, cy, innerR, start - 90);
+
+    const largeArc = end - start > 180 ? 1 : 0;
+
+    const d = `
+      M ${p1.x} ${p1.y}
+      A ${r} ${r} 0 ${largeArc} 1 ${p2.x} ${p2.y}
+      L ${p3.x} ${p3.y}
+      A ${innerR} ${innerR} 0 ${largeArc} 0 ${p4.x} ${p4.y}
+      Z
+    `;
+
+    const path = createSVG('path', {
+      d, fill: color, stroke: 'rgba(255,255,255,0.2)', 'stroke-width': '1',
+      style: 'cursor:pointer; transition: opacity 0.2s ease;',
+    });
+
+    path.addEventListener('mouseenter', () => {
+      path.style.opacity = '0.85';
+      tooltip.innerHTML = `<strong>${label}</strong><br/>${value.toLocaleString()}`;
+      tooltip.style.opacity = '1';
+    });
+    path.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      tooltip.style.left = e.clientX - rect.left + 12 + 'px';
+      tooltip.style.top = e.clientY - rect.top - 12 + 'px';
+    });
+    path.addEventListener('mouseleave', () => {
+      path.style.opacity = '1';
+      tooltip.style.opacity = '0';
+    });
+
+    svg.appendChild(path);
+  }
+
+  donutArc(0, passAngle, '#2196f3', 'Passed', pass);
+  donutArc(passAngle, 360, '#ff9800', 'Failed', fail);
+
+  // Center text
+  const centerText = createSVG('text', {
+    x: cx, y: cy - 5, 'text-anchor': 'middle', fill: '#fff', 'font-size': '14', 'font-weight': '600',
+  });
+  centerText.textContent = 'Piscine';
+  svg.appendChild(centerText);
+
+  const centerVal = createSVG('text', {
+    x: cx, y: cy + 14, 'text-anchor': 'middle', fill: '#fff', 'font-size': '16', 'font-weight': '700',
+  });
+  centerVal.textContent = `${pass}/${total}`;
+  svg.appendChild(centerVal);
+
+  // Legend
+  const legendY = 250;
+  const legendItems = [
+    { color: '#2196f3', label: `Pass (${pass})` },
+    { color: '#ff9800', label: `Fail (${fail})` },
+  ];
+
+  legendItems.forEach((item, i) => {
+    const x = cx - 70 + i * 90;
+    const rect = createSVG('rect', { x, y: legendY, width: 14, height: 14, rx: 3, fill: item.color });
+    svg.appendChild(rect);
+    const text = createSVG('text', { x: x + 20, y: legendY + 12, fill: 'rgba(255,255,255,0.9)', 'font-size': '12' });
+    text.textContent = item.label;
+    svg.appendChild(text);
+  });
+}
+
 // =================== INIT ===================
 
 document.addEventListener('DOMContentLoaded', loadData);
-

@@ -21,6 +21,7 @@ function parseJwt(token) {
 async function fetchGraphQL(query, variables = {}) {
   const token = localStorage.getItem('token');
   if (!token) {
+    window.location.href = 'index.html';
     throw new Error('No authentication token found');
   }
 
@@ -32,6 +33,12 @@ async function fetchGraphQL(query, variables = {}) {
     },
     body: JSON.stringify({ query, variables }),
   });
+
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+    throw new Error('Session expired. Please log in again.');
+  }
 
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}: ${res.statusText}`);

@@ -378,6 +378,31 @@ body.guest-mode {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
 }
 
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  min-height: 1.2rem;
+  margin: 0.4rem 0;
+}
+
+.skeleton.big {
+  min-height: 2.5rem;
+  width: 60%;
+}
+
+/* Piscine card accent */
+.card.stats:has(#piscineGraph) {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(255, 152, 0, 0.15));
+}
+
 /* Responsive graph sizing */
 @media (max-width: 768px) {
   .profile-container {

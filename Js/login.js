@@ -1,5 +1,11 @@
-if (localStorage.getItem('token')) {
-  window.location.href = 'profile.html';
+const token = localStorage.getItem('token');
+if (token) {
+  const decoded = parseJwt(token);
+  if (decoded && decoded.exp && decoded.exp * 1000 > Date.now()) {
+    window.location.href = 'profile.html';
+  } else {
+    localStorage.removeItem('token');
+  }
 }
 
 const form = document.getElementById('loginForm');
@@ -26,7 +32,6 @@ form.addEventListener('submit', async (e) => {
       mode: 'cors',
       headers: {
         'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/json',
       },
     });
 
@@ -37,17 +42,30 @@ form.addEventListener('submit', async (e) => {
       throw new Error(`Login failed (${res.status})`);
     }
 
-    const contentType = res.headers.get('content-type');
-    let data;
+    const text = await res.text();
+    let data = null;
 
-    if (contentType && contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      const text = await res.text();
-      // Some auth endpoints return the JWT as plain text instead of JSON
+    // 1. Try to parse the whole response as JSON (even if Content-Type is wrong)
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // Not valid JSON — continue to plain-text checks below
+    }
+
+    // 2. If it was JSON but doesn't have a recognized token field, try common keys
+    if (data && typeof data === 'object') {
+      const token = data.token ?? data.jwt ?? data.accessToken;
+      if (token) {
+        data = { token: String(token) };
+      }
+    }
+
+    // 3. If data is still not valid, treat response as plain text (raw JWT or quoted string)
+    if (!data || typeof data !== 'object' || !data.token) {
+      const cleaned = text.trim().replace(/^"|"$/g, ''); // remove surrounding quotes
       const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
-      if (jwtPattern.test(text.trim())) {
-        data = { token: text.trim() };
+      if (jwtPattern.test(cleaned)) {
+        data = { token: cleaned };
       } else {
         throw new Error(`Invalid response from server: ${text.substring(0, 100)}`);
       }

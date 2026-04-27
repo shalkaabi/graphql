@@ -442,3 +442,9 @@ body.guest-mode {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
+
+/* Make all buttons inside profile-container unmoving */
+.profile-container .btn,
+.profile-container .btn:hover {
+  transform: none !important;
+}

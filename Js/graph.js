@@ -219,7 +219,7 @@ function drawAuditGraph(up, down) {
   const chartH = height - pad.top - pad.bottom;
 
   const maxVal = Math.max(up, down) || 1;
-  const barHeight = (chartH / data.length) * 0.6;
+  const barHeight = (chartH / data.length) * 0.3;
   const barGap = (chartH / data.length) * 0.4;
 
   const bars = [];

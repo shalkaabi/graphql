@@ -486,7 +486,7 @@ function drawPiscineGraph(pass, fail, exerciseAttempts) {
   });
 }
 
-// =================== GRAPH 5: TOP SKILLS BAR CHART ===================
+// =================== GRAPH 5: SKILLS RADAR CHART ===================
 
 function detectLanguage(path) {
   const p = (path || '').toLowerCase();
@@ -507,9 +507,9 @@ function detectLanguage(path) {
   return null;
 }
 
-function drawTopSkillsGraph(xpTransactions, results, progressData) {
-  const svg = document.getElementById('topSkillsGraph');
-  const tooltip = document.getElementById('topSkillsTooltip');
+function drawSkillsRadar(xpTransactions, results, progressData) {
+  const svg = document.getElementById('skillsRadar');
+  const tooltip = document.getElementById('radarTooltip');
   svg.innerHTML = '';
 
   // Extract languages from all data sources

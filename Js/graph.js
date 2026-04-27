@@ -220,7 +220,7 @@ function drawAuditGraph(up, down) {
 
   const maxVal = Math.max(up, down) || 1;
   const barHeight = (chartH / data.length) * 0.3;
-  const barGap = (chartH / data.length) * 0.4;
+  const barGap = (chartH / data.length) * 0.2;
 
   const bars = [];
 
@@ -488,73 +488,30 @@ function drawPiscineGraph(pass, fail, exerciseAttempts) {
 
 // =================== GRAPH 5: SKILLS RADAR CHART ===================
 
-function detectLanguage(path) {
-  const p = (path || '').toLowerCase();
-
-  // Go
-  if (p.includes('piscine-go') || p.includes('/go/') || p.includes('golang')) return 'Go';
-  // Js
-  if (p.includes('piscine-js') || p.includes('/js/') || p.includes('/javascript/') || p.includes('nodejs')) return 'Js';
-  // Front
-  if (p.includes('/html/') || p.includes('/css/') || p.includes('/react/') || p.includes('/vue/') || p.includes('/angular/') || p.includes('frontend') || p.includes('dom')) return 'Front';
-  // Back
-  if (p.includes('backend') || p.includes('server') || p.includes('/api/') || p.includes('/sql/') || p.includes('/database/') || p.includes('/db/')) return 'Back';
-  // Algo
-  if (p.includes('algo') || p.includes('algorithm') || p.includes('sort') || p.includes('search') || p.includes('data-structure')) return 'Algo';
-  // Prog
-  if (p.includes('prog') || p.includes('programming') || p.includes('basic') || p.includes('fundamental') || p.includes('intro')) return 'Prog';
-
-  return null;
-}
-
-function drawSkillsRadar(xpTransactions, results, progressData) {
+function drawSkillsRadar(skillsData) {
   const svg = document.getElementById('skillsRadar');
   const tooltip = document.getElementById('radarTooltip');
   svg.innerHTML = '';
 
-  // Extract languages from all data sources
-  const langStats = {};
-
-  // Scan XP transactions
-  xpTransactions.forEach((t) => {
-    const path = t.path || '';
-    const lang = detectLanguage(path);
-    if (lang) {
-      if (!langStats[lang]) langStats[lang] = { xp: 0, projects: new Set() };
-      langStats[lang].xp += t.amount;
-      langStats[lang].projects.add(path);
-    }
-  });
-
-  // Scan results
-  results.forEach((r) => {
-    const path = r.path || '';
-    const lang = detectLanguage(path);
-    if (lang) {
-      if (!langStats[lang]) langStats[lang] = { xp: 0, projects: new Set() };
-      langStats[lang].projects.add(path);
-    }
-  });
-
-  // Scan progress
-  progressData.forEach((p) => {
-    const path = p.path || '';
-    const lang = detectLanguage(path);
-    if (lang) {
-      if (!langStats[lang]) langStats[lang] = { xp: 0, projects: new Set() };
-      langStats[lang].projects.add(path);
-    }
-  });
-
   const allowedSkills = ['Go', 'Prog', 'Front', 'Back', 'Js', 'Algo'];
+
+  // Aggregate real skill amounts from the API by type
+  const skillMap = {};
+  (skillsData || []).forEach((s) => {
+    const type = s.type;
+    if (!type) return;
+    if (!skillMap[type]) skillMap[type] = { xp: 0, count: 0 };
+    skillMap[type].xp += s.amount || 0;
+    skillMap[type].count += 1;
+  });
 
   // Build skills array ensuring all 6 exist (even with 0 XP)
   const skills = allowedSkills.map((name) => {
-    const data = langStats[name];
+    const data = skillMap[name];
     return {
       name,
       xp: data ? data.xp : 0,
-      projects: data ? data.projects.size : 0,
+      count: data ? data.count : 0,
     };
   });
 
@@ -675,7 +632,7 @@ function drawSkillsRadar(xpTransactions, results, progressData) {
 
     tooltipPoints.push({
       el: circle,
-      html: `<strong>${p.skill.name}</strong><br/>${p.skill.xp.toLocaleString()} XP<br/>${p.skill.projects} project${p.skill.projects !== 1 ? 's' : ''}`,
+      html: `<strong>${p.skill.name}</strong><br/>${p.skill.xp.toLocaleString()} XP<br/>${p.skill.count} record${p.skill.count !== 1 ? 's' : ''}`,
     });
 
     circle.addEventListener('mouseenter', () => {

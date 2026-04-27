@@ -73,6 +73,11 @@ const detailedDataQuery = `
         type
       }
     }
+
+    skill(where: { userId: { _eq: $userId } }) {
+      type
+      amount
+    }
   }
 `;
 

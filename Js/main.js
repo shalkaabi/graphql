@@ -50,11 +50,7 @@ async function loadData() {
     renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
     // Top skills radar chart
-    drawSkillsRadar(
-      detailedData.xp || [],
-      detailedData.result || [],
-      detailedData.progress || []
-    );
+    drawSkillsRadar(detailedData.skill || []);
 
     setupLogout();
   } catch (err) {

@@ -121,24 +121,19 @@ function drawXPGraph(transactions) {
       stroke: 'rgba(255,255,255,0.1)', 'stroke-width': '1',
     });
     svg.appendChild(line);
-    const text = createSVG('text', {
-      x: pad.left - 10, y: y + 4, 'text-anchor': 'end', fill: 'rgba(255,255,255,0.7)', 'font-size': '11',
-    });
-    text.textContent = Math.round(val).toLocaleString();
-    svg.appendChild(text);
   }
 
-  // Grid lines X (dates)
+  // Grid lines X (dates) - labels removed
   const xSteps = Math.min(data.length - 1, 6);
   for (let i = 0; i <= xSteps; i++) {
     const idx = Math.round(((data.length - 1) / xSteps) * i);
     const d = data[idx].date;
     const x = xScale(d);
-    const text = createSVG('text', {
-      x: x, y: height - pad.bottom + 20, 'text-anchor': 'middle', fill: 'rgba(255,255,255,0.7)', 'font-size': '11',
+    const line = createSVG('line', {
+      x1: x, y1: pad.top, x2: x, y2: height - pad.bottom,
+      stroke: 'rgba(255,255,255,0.05)', 'stroke-width': '1',
     });
-    text.textContent = formatDate(d);
-    svg.appendChild(text);
+    svg.appendChild(line);
   }
 
   // Area path
@@ -190,14 +185,6 @@ function drawXPGraph(transactions) {
   });
 
   setupTooltip(svg, tooltip, tooltipPoints);
-
-  // Axis labels
-  const yLabel = createSVG('text', {
-    x: 20, y: height / 2, fill: 'rgba(255,255,255,0.8)', 'font-size': '12', 'text-anchor': 'middle',
-    transform: `rotate(-90, 20, ${height / 2})`,
-  });
-  yLabel.textContent = 'Cumulative XP';
-  svg.appendChild(yLabel);
 }
 
 // =================== GRAPH 2: AUDIT HORIZONTAL BARS ===================
@@ -688,6 +675,6 @@ function drawSkillsRadar(skillsData) {
     'font-size': '13',
     'font-weight': '500',
   });
-  title.textContent = 'Skills Overview (Radar Chart)';
+  title.textContent = 'Skills Overview';
   svg.appendChild(title);
 }

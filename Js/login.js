@@ -1,4 +1,4 @@
-const token = localStorage.getItem('token');
+token = localStorage.getItem('token');
 if (token) {
   const decoded = parseJwt(token);
   if (decoded && decoded.exp && decoded.exp * 1000 > Date.now()) {
@@ -8,7 +8,7 @@ if (token) {
   }
 }
 
-const form = document.getElementById('loginForm');
+form = document.getElementById('loginForm');
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();

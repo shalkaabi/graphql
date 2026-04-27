@@ -494,15 +494,29 @@ function drawSkillsRadar(skillsData) {
   svg.innerHTML = '';
 
   const allowedSkills = ['Go', 'Prog', 'Front', 'Back', 'Js', 'Algo'];
+  const allowedSkillsLower = allowedSkills.map((s) => s.toLowerCase());
 
   // Aggregate real skill amounts from the API by type
   const skillMap = {};
   (skillsData || []).forEach((s) => {
-    const type = s.type;
+    let type = s.type;
     if (!type) return;
-    if (!skillMap[type]) skillMap[type] = { xp: 0, count: 0 };
-    skillMap[type].xp += s.amount || 0;
-    skillMap[type].count += 1;
+
+    // Handle "skill_" prefix (e.g., "skill_go" -> "go")
+    if (type.toLowerCase().startsWith('skill_')) {
+      type = type.slice(6);
+    }
+
+    // Normalize case and match against allowed skills
+    const typeLower = type.toLowerCase();
+    const matchedIndex = allowedSkillsLower.indexOf(typeLower);
+    if (matchedIndex === -1) return; // Skip unknown skill types
+
+    const normalizedType = allowedSkills[matchedIndex];
+
+    if (!skillMap[normalizedType]) skillMap[normalizedType] = { xp: 0, count: 0 };
+    skillMap[normalizedType].xp += s.amount || 0;
+    skillMap[normalizedType].count += 1;
   });
 
   // Build skills array ensuring all 6 exist (even with 0 XP)

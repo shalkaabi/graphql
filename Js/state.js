@@ -74,7 +74,9 @@ const detailedDataQuery = `
       }
     }
 
-    skill(where: { userId: { _eq: $userId } }) {
+    skill: transaction(
+      where: { userId: { _eq: $userId }, type: { _like: "skill_%" } }
+    ) {
       type
       amount
     }

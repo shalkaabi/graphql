@@ -490,25 +490,20 @@ function drawPiscineGraph(pass, fail, exerciseAttempts) {
 
 function detectLanguage(path) {
   const p = (path || '').toLowerCase();
-  
+
+  // Go
   if (p.includes('piscine-go') || p.includes('/go/') || p.includes('golang')) return 'Go';
-  if (p.includes('piscine-js') || p.includes('/js/') || p.includes('/javascript/') || p.includes('nodejs')) return 'JavaScript';
-  if (p.includes('/rust/') || p.includes('rust-')) return 'Rust';
-  if (p.includes('/python/') || p.includes('python-')) return 'Python';
-  if (p.includes('/cpp/') || p.includes('/c++/') || p.includes('cplusplus')) return 'C++';
-  if (p.includes('/c/') || p.includes('/clang/')) return 'C';
-  if (p.includes('/java/') || p.includes('java-')) return 'Java';
-  if (p.includes('/ruby/') || p.includes('ruby-')) return 'Ruby';
-  if (p.includes('/php/') || p.includes('php-')) return 'PHP';
-  if (p.includes('/kotlin/') || p.includes('kotlin-')) return 'Kotlin';
-  if (p.includes('/swift/') || p.includes('swift-')) return 'Swift';
-  if (p.includes('/sql/') || p.includes('/database/')) return 'SQL';
-  if (p.includes('/shell/') || p.includes('/bash/') || p.includes('/script/')) return 'Shell';
-  if (p.includes('/html/') || p.includes('/css/')) return 'HTML/CSS';
-  if (p.includes('/react/') || p.includes('/vue/') || p.includes('/angular/')) return 'JavaScript';
-  if (p.includes('graphql')) return 'GraphQL';
-  if (p.includes('docker') || p.includes('container')) return 'Docker';
-  
+  // Js
+  if (p.includes('piscine-js') || p.includes('/js/') || p.includes('/javascript/') || p.includes('nodejs')) return 'Js';
+  // Front
+  if (p.includes('/html/') || p.includes('/css/') || p.includes('/react/') || p.includes('/vue/') || p.includes('/angular/') || p.includes('frontend') || p.includes('dom')) return 'Front';
+  // Back
+  if (p.includes('backend') || p.includes('server') || p.includes('/api/') || p.includes('/sql/') || p.includes('/database/') || p.includes('/db/')) return 'Back';
+  // Algo
+  if (p.includes('algo') || p.includes('algorithm') || p.includes('sort') || p.includes('search') || p.includes('data-structure')) return 'Algo';
+  // Prog
+  if (p.includes('prog') || p.includes('programming') || p.includes('basic') || p.includes('fundamental') || p.includes('intro')) return 'Prog';
+
   return null;
 }
 
@@ -551,101 +546,177 @@ function drawTopSkillsGraph(xpTransactions, results, progressData) {
     }
   });
 
-  // Convert to array and sort by XP
-  const skills = Object.entries(langStats)
-    .map(([name, data]) => ({
-      name,
-      xp: data.xp,
-      projects: data.projects.size,
-    }))
-    .sort((a, b) => b.xp - a.xp);
+  const allowedSkills = ['Go', 'Prog', 'Front', 'Back', 'Js', 'Algo'];
 
-  if (skills.length === 0) {
-    svg.appendChild(createSVG('text', { x: 300, y: 175, 'text-anchor': 'middle', fill: '#fff', 'font-size': '16' }));
-    svg.lastChild.textContent = 'No language data available';
-    return;
-  }
+  // Build skills array ensuring all 6 exist (even with 0 XP)
+  const skills = allowedSkills.map((name) => {
+    const data = langStats[name];
+    return {
+      name,
+      xp: data ? data.xp : 0,
+      projects: data ? data.projects.size : 0,
+    };
+  });
 
   const width = 600;
-  const height = 350;
-  const pad = { top: 30, right: 80, bottom: 30, left: 120 };
-  const chartW = width - pad.left - pad.right;
-  const chartH = height - pad.top - pad.bottom;
+  const height = 420;
+  const cx = width / 2;
+  const cy = height / 2;
+  const maxRadius = 130;
+  const levels = 5;
 
-  const maxXP = skills[0].xp;
-  const barHeight = chartH / skills.length * 0.65;
-  const barGap = chartH / skills.length * 0.35;
+  const maxXP = Math.max(...skills.map((s) => s.xp), 1);
 
-  const bars = [];
-  const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#fa709a', '#fee140', '#30cfd0'];
+  // =================== RADAR GRID ===================
+  // Draw concentric polygon levels
+  for (let level = 1; level <= levels; level++) {
+    const r = (maxRadius / levels) * level;
+    const points = skills
+      .map((_, i) => {
+        const angle = (Math.PI * 2 * i) / skills.length - Math.PI / 2;
+        return `${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`;
+      })
+      .join(' ');
 
+    const polygon = createSVG('polygon', {
+      points,
+      fill: level === levels ? 'rgba(255,255,255,0.03)' : 'none',
+      stroke: 'rgba(255,255,255,0.15)',
+      'stroke-width': '1',
+    });
+    svg.appendChild(polygon);
+  }
+
+  // =================== AXES & LABELS ===================
   skills.forEach((skill, i) => {
-    const y = pad.top + i * (barHeight + barGap) + barGap / 2;
-    const barW = maxXP > 0 ? (skill.xp / maxXP) * chartW : 0;
-    const color = colors[i % colors.length];
+    const angle = (Math.PI * 2 * i) / skills.length - Math.PI / 2;
+    const x = cx + maxRadius * Math.cos(angle);
+    const y = cy + maxRadius * Math.sin(angle);
 
-    // Language label
-    const label = createSVG('text', {
-      x: pad.left - 12, y: y + barHeight / 2 + 4,
-      'text-anchor': 'end', fill: 'rgba(255,255,255,0.9)', 'font-size': '13', 'font-weight': '500',
+    // Axis line
+    const line = createSVG('line', {
+      x1: cx,
+      y1: cy,
+      x2: x,
+      y2: y,
+      stroke: 'rgba(255,255,255,0.2)',
+      'stroke-width': '1',
     });
-    label.textContent = skill.name;
-    svg.appendChild(label);
+    svg.appendChild(line);
 
-    // Bar background
-    const bg = createSVG('rect', {
-      x: pad.left, y, width: chartW, height: barHeight,
-      rx: 5, fill: 'rgba(255,255,255,0.05)',
-    });
-    svg.appendChild(bg);
+    // Label
+    const labelR = maxRadius + 28;
+    const lx = cx + labelR * Math.cos(angle);
+    const ly = cy + labelR * Math.sin(angle);
 
-    // Bar
-    const bar = createSVG('rect', {
-      x: pad.left, y, height: barHeight,
-      rx: 5, fill: color,
-      'data-width': barW,
+    const text = createSVG('text', {
+      x: lx,
+      y: ly + 4,
+      'text-anchor': 'middle',
+      fill: 'rgba(255,255,255,0.9)',
+      'font-size': '13',
+      'font-weight': '500',
     });
-    svg.appendChild(bar);
-    bars.push(bar);
-
-    // XP value text
-    const valText = createSVG('text', {
-      x: pad.left + barW + 8, y: y + barHeight / 2 + 4,
-      fill: 'rgba(255,255,255,0.85)', 'font-size': '12', opacity: '0',
-      style: 'transition: opacity 0.5s ease;',
-    });
-    valText.textContent = `${skill.xp.toLocaleString()} XP (${skill.projects} project${skill.projects !== 1 ? 's' : ''})`;
-    svg.appendChild(valText);
-
-    // Tooltip events
-    bar.addEventListener('mouseenter', () => {
-      tooltip.innerHTML = `<strong>${skill.name}</strong><br/>${skill.xp.toLocaleString()} XP<br/>${skill.projects} project${skill.projects !== 1 ? 's' : ''}`;
-      tooltip.style.opacity = '1';
-      bar.style.opacity = '0.85';
-    });
-    bar.addEventListener('mousemove', (e) => {
-      const rect = svg.getBoundingClientRect();
-      tooltip.style.left = e.clientX - rect.left + 12 + 'px';
-      tooltip.style.top = e.clientY - rect.top - 12 + 'px';
-    });
-    bar.addEventListener('mouseleave', () => {
-      tooltip.style.opacity = '0';
-      bar.style.opacity = '1';
-    });
-
-    // Show value after animation
-    setTimeout(() => {
-      valText.setAttribute('opacity', '1');
-    }, 600 + i * 100);
+    text.textContent = skill.name;
+    svg.appendChild(text);
   });
 
-  // Title
+  // =================== DATA POLYGON ===================
+  const dataPoints = skills.map((skill, i) => {
+    const angle = (Math.PI * 2 * i) / skills.length - Math.PI / 2;
+    const r = (skill.xp / maxXP) * maxRadius;
+    return {
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      skill,
+    };
+  });
+
+  const pointsStr = dataPoints.map((p) => `${p.x},${p.y}`).join(' ');
+
+  // Gradient definition
+  const defs = createSVG('defs');
+  const grad = createSVG('linearGradient', {
+    id: 'radarGrad',
+    x1: '0',
+    y1: '0',
+    x2: '0',
+    y2: '1',
+  });
+  grad.appendChild(createSVG('stop', { offset: '0%', 'stop-color': 'rgba(102,126,234,0.5)' }));
+  grad.appendChild(createSVG('stop', { offset: '100%', 'stop-color': 'rgba(118,75,162,0.2)' }));
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  // Fill polygon
+  const fillPolygon = createSVG('polygon', {
+    points: pointsStr,
+    fill: 'url(#radarGrad)',
+    stroke: '#667eea',
+    'stroke-width': '2.5',
+    'stroke-linejoin': 'round',
+    style: 'opacity:0; transition: opacity 1.2s ease;',
+  });
+  svg.appendChild(fillPolygon);
+
+  // =================== DATA POINTS & TOOLTIPS ===================
+  const tooltipPoints = [];
+  dataPoints.forEach((p) => {
+    const circle = createSVG('circle', {
+      cx: p.x,
+      cy: p.y,
+      r: '5',
+      fill: '#667eea',
+      stroke: '#fff',
+      'stroke-width': '2',
+      style: 'cursor:pointer; transition: all 0.2s ease;',
+    });
+    svg.appendChild(circle);
+
+    tooltipPoints.push({
+      el: circle,
+      html: `<strong>${p.skill.name}</strong><br/>${p.skill.xp.toLocaleString()} XP<br/>${p.skill.projects} project${p.skill.projects !== 1 ? 's' : ''}`,
+    });
+
+    circle.addEventListener('mouseenter', () => {
+      circle.setAttribute('r', '8');
+      circle.setAttribute('fill', '#fff');
+      circle.setAttribute('stroke', '#667eea');
+    });
+    circle.addEventListener('mouseleave', () => {
+      circle.setAttribute('r', '5');
+      circle.setAttribute('fill', '#667eea');
+      circle.setAttribute('stroke', '#fff');
+    });
+  });
+
+  setupTooltip(svg, tooltip, tooltipPoints);
+
+  // =================== CENTER VALUE ===================
+  const centerText = createSVG('text', {
+    x: cx,
+    y: cy + 4,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.3)',
+    'font-size': '11',
+  });
+  centerText.textContent = 'SKILLS';
+  svg.appendChild(centerText);
+
+  // =================== ANIMATE ===================
+  setTimeout(() => {
+    fillPolygon.style.opacity = '1';
+  }, 100);
+
+  // =================== TITLE ===================
   const title = createSVG('text', {
-    x: width / 2, y: 18,
-    'text-anchor': 'middle', fill: 'rgba(255,255,255,0.7)', 'font-size': '13', 'font-weight': '500',
+    x: width / 2,
+    y: 18,
+    'text-anchor': 'middle',
+    fill: 'rgba(255,255,255,0.7)',
+    'font-size': '13',
+    'font-weight': '500',
   });
-  title.textContent = 'Skills ranked by XP earned';
+  title.textContent = 'Skills Overview (Radar Chart)';
   svg.appendChild(title);
-
-  animateBars(bars, 900);
 }

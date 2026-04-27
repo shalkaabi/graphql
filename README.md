@@ -29,11 +29,10 @@ A personal profile page built with vanilla HTML, CSS, and JavaScript that consum
 .
 ├── index.html          # Login page
 ├── profile.html        # Profile dashboard
-├── register.html       # Registration page
 ├── style.css           # Stylesheet
 ├── Js/
 │   ├── api.js          # API calls and GraphQL utilities
-│   ├── state.js        # Shared state management, JWT parser, logout
+│   ├── state.js        # Shared state management, JWT parser, 
 │   ├── login.js        # Login form handler
 │   ├── main.js         # Main entry logic
 │   └── graph.js        # Profile data fetching and SVG graph rendering

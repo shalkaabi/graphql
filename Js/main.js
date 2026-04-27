@@ -49,8 +49,8 @@ async function loadData() {
     renderProjectXP(detailedData.xp || []);
     renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
-    // Top skills bar chart
-    drawTopSkillsGraph(
+    // Top skills radar chart
+    drawSkillsRadar(
       detailedData.xp || [],
       detailedData.result || [],
       detailedData.progress || []

@@ -49,11 +49,9 @@ async function loadData() {
     renderProjectXP(detailedData.xp || []);
     renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
-    // Top-level overview radar chart
-    drawTopLevelGraph(
+    // Top skills bar chart
+    drawTopSkillsGraph(
       detailedData.xp || [],
-      detailedData.up || [],
-      detailedData.down || [],
       detailedData.result || [],
       detailedData.progress || []
     );
@@ -169,4 +167,3 @@ function renderPiscineStats(progressData, resultData) {
 // =================== INIT ===================
 
 document.addEventListener('DOMContentLoaded', loadData);
-

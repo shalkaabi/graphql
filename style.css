@@ -105,7 +105,8 @@ body.guest-mode {
 }
 
 .guest-mode .welcome-text,
-.guest-mode #logoutBtn {
+.guest-mode #logoutBtn,
+.guest-mode #accountBtn {
   display: none !important;
 }
 

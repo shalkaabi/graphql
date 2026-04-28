@@ -124,24 +124,46 @@ body.guest-mode {
   max-width: 1200px;
   margin: 2rem auto 0;
   padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+/* Section containers */
+.section-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 2rem;
   align-items: start;
 }
 
+.section-1 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.section-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.section-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 @media (max-width: 768px) {
   .profile-container {
-    grid-template-columns: 1fr;
     padding: 0 1rem;
     gap: 1rem;
   }
-  
+
+  .section-container {
+    grid-template-columns: 1fr;
+  }
+
   #xpGraph {
     width: 100% !important;
     height: 200 !important;
   }
-  
+
   .card svg {
     max-width: 100%;
     height: auto;

@@ -22,86 +22,95 @@
 
   <div class="profile-container">
 
-    <!-- USER INFO -->
-    <section class="card">
-      <h3><i class="bx bx-id-card"></i> User Info</h3>
-      <p>ID: <span id="userId">—</span></p>
-      <p>name: <span id="userLogin">—</span></p>
+    <!-- SECTION 1: User Info, Total XP, Audit Summary -->
+    <section class="section-container section-1">
+      <!-- USER INFO -->
+      <section class="card">
+        <h3><i class="bx bx-id-card"></i> User Info</h3>
+        <p>ID: <span id="userId">—</span></p>
+        <p>name: <span id="userLogin">—</span></p>
+      </section>
+
+      <!-- XP -->
+      <section class="card">
+        <h3><i class="bx bx-trophy"></i> Total XP</h3>
+        <p class="big-stat" id="totalXP">—</p>
+      </section>
+
+      <!-- AUDIT SUMMARY TABLE -->
+      <section class="card stats">
+        <h3><i class="bx bx-table"></i> Audit Summary</h3>
+        <table class="audit-table" id="auditTable">
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>Audit Ratio</th>
+              <th>Total XP (KB)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="levelCell">—</td>
+              <td id="auditRatioCell">—</td>
+              <td id="xpKbCell">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </section>
 
-    <!-- XP -->
-    <section class="card">
-      <h3><i class="bx bx-trophy"></i> Total XP</h3>
-      <p class="big-stat" id="totalXP">—</p>
+    <!-- SECTION 2: Audit Graph, Piscine Graph -->
+    <section class="section-container section-2">
+      <!-- AUDIT DISTRIBUTION -->
+      <section class="card stats">
+        <h3><i class="bx bx-pie-chart-alt"></i> Audit Ratio</h3>
+        <div class="chart-wrap">
+          <svg id="auditGraph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="auditTooltip"></div>
+        </div>
+      </section>
+
+      <!-- PISCINE STATS -->
+      <section class="card stats">
+        <h3><i class="bx bx-swim"></i> Piscine Stats</h3>
+        <p class="big-stat" id="piscineTotal">—</p>
+        <p>Pass: <span id="piscinePass">—</span></p>
+        <p>Fail: <span id="piscineFail">—</span></p>
+        <div class="chart-wrap">
+          <svg id="piscineGraph" viewBox="0 0 350 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="piscineTooltip"></div>
+        </div>
+      </section>
     </section>
 
-    <!-- AUDIT SUMMARY TABLE -->
-    <section class="card stats">
-      <h3><i class="bx bx-table"></i> Audit Summary</h3>
-      <table class="audit-table" id="auditTable">
-        <thead>
-          <tr>
-            <th>Level</th>
-            <th>Audit Ratio</th>
-            <th>Total XP (KB)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td id="levelCell">—</td>
-            <td id="auditRatioCell">—</td>
-            <td id="xpKbCell">—</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <!-- SECTION 3: Top Skills, XP Progress, Top Projects -->
+    <section class="section-container section-3">
+      <!-- TOP SKILLS GRAPH -->
+      <section class="card stats">
+        <h3><i class="bx bx-code-block"></i> Top Skills</h3>
+        <div class="chart-wrap">
+          <svg id="skillsRadar" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="radarTooltip"></div>
+        </div>
+      </section>
 
-    <!-- AUDIT DISTRIBUTION -->
-    <section class="card stats">
-      <h3><i class="bx bx-pie-chart-alt"></i> Audit Ratio</h3>
-      <div class="chart-wrap">
-        <svg id="auditGraph" viewBox="0 0 500 150" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="tooltip" id="auditTooltip"></div>
-      </div>
-    </section>
+      <!-- XP OVER TIME -->
+      <section class="card stats">
+        <h3><i class="bx bx-line-chart"></i> XP Progress Over Time</h3>
+        <div class="chart-wrap">
+          <svg id="xpGraph" viewBox="0 0 800 350" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="xpTooltip"></div>
+        </div>
+      </section>
 
-    <!-- TOP SKILLS GRAPH -->
-    <section class="card stats">
-      <h3><i class="bx bx-code-block"></i> Top Skills</h3>
-      <div class="chart-wrap">
-        <svg id="skillsRadar" viewBox="0 0 500 350" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="tooltip" id="radarTooltip"></div>
-      </div>
-    </section>
-
-    <!-- XP OVER TIME -->
-    <section class="card stats">
-      <h3><i class="bx bx-line-chart"></i> XP Progress Over Time</h3>
-      <div class="chart-wrap">
-        <svg id="xpGraph" viewBox="0 0 800 350" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="tooltip" id="xpTooltip"></div>
-      </div>
-    </section>
-
-    <!-- PROJECT XP GRAPH -->
-    <section class="card stats">
-      <h3><i class="bx bx-bar-chart-square"></i> Top Projects by XP</h3>
-      <div class="chart-wrap">
-        <svg id="projectGraph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="tooltip" id="projectTooltip"></div>
-      </div>
-    </section>
-
-    <!-- PISCINE STATS -->
-    <section class="card stats">
-      <h3><i class="bx bx-swim"></i> Piscine Stats</h3>
-      <p class="big-stat" id="piscineTotal">—</p>
-      <p>Pass: <span id="piscinePass">—</span></p>
-      <p>Fail: <span id="piscineFail">—</span></p>
-      <div class="chart-wrap">
-        <svg id="piscineGraph" viewBox="0 0 350 300" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="tooltip" id="piscineTooltip"></div>
-      </div>
+      <!-- PROJECT XP GRAPH -->
+      <section class="card stats">
+        <h3><i class="bx bx-bar-chart-square"></i> Top Projects by XP</h3>
+        <div class="chart-wrap">
+          <svg id="projectGraph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="tooltip" id="projectTooltip"></div>
+        </div>
+      </section>
     </section>
 
   </div>

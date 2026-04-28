@@ -187,90 +187,184 @@ function drawXPGraph(transactions) {
   setupTooltip(svg, tooltip, tooltipPoints);
 }
 
-// =================== GRAPH 2: AUDIT HORIZONTAL BARS ===================
+// =================== GRAPH 2: AUDIT GAUGE CHART ===================
 
 function drawAuditGraph(up, down) {
   const svg = document.getElementById('auditGraph');
   const tooltip = document.getElementById('auditTooltip');
   svg.innerHTML = '';
 
-  const data = [
-    { label: 'Audits Done', value: up, color: '#4caf50' },
-    { label: 'Audits Received', value: down, color: '#f44336' },
-  ];
-
   const width = 400;
   const height = 300;
-  const pad = { top: 40, right: 40, bottom: 30, left: 100 };
-  const chartW = width - pad.left - pad.right;
-  const chartH = height - pad.top - pad.bottom;
+  const cx = width / 2;
+  const cy = height / 2 + 45;
+  const outerR = 130;
+  const innerR = 90;
+  const startAngle = 180;
+  const endAngle = 360;
+  const total = up + down || 1;
+  const ratio = down > 0 ? up / down : (up > 0 ? Infinity : 0);
+  const ratioDisplay = ratio === Infinity ? '∞' : ratio.toFixed(2);
+  const percentage = Math.min(up / total, 1);
 
-  const maxVal = Math.max(up, down) || 1;
-  const barHeight = (chartH / data.length) * 0.2;
-  const barGap = (chartH / data.length) * 0.1;
+  function polar(cx, cy, r, angle) {
+    const rad = (Math.PI * angle) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
 
-  const bars = [];
+  function arcPath(cx, cy, r, start, end) {
+    const p1 = polar(cx, cy, r, start);
+    const p2 = polar(cx, cy, r, end);
+    const largeArc = end - start > 180 ? 1 : 0;
+    return `M ${p1.x} ${p1.y} A ${r} ${r} 0 ${largeArc} 1 ${p2.x} ${p2.y}`;
+  }
 
-  data.forEach((item, i) => {
-    const y = pad.top + i * (barHeight + barGap) + barGap / 2;
-    const barW = (item.value / maxVal) * chartW;
+  function arcSlice(cx, cy, outerR, innerR, start, end) {
+    const p1 = polar(cx, cy, outerR, start);
+    const p2 = polar(cx, cy, outerR, end);
+    const p3 = polar(cx, cy, innerR, end);
+    const p4 = polar(cx, cy, innerR, start);
+    const largeArc = end - start > 180 ? 1 : 0;
+    return `
+      M ${p1.x} ${p1.y}
+      A ${outerR} ${outerR} 0 ${largeArc} 1 ${p2.x} ${p2.y}
+      L ${p3.x} ${p3.y}
+      A ${innerR} ${innerR} 0 ${largeArc} 0 ${p4.x} ${p4.y}
+      Z
+    `;
+  }
 
-    // Label
-    const label = createSVG('text', {
-      x: pad.left - 10, y: y + barHeight / 2 + 4,
-      'text-anchor': 'end', fill: 'rgba(255,255,255,0.9)', 'font-size': '12',
+  // Gradient definition for gauge fill
+  const defs = createSVG('defs');
+  const grad = createSVG('linearGradient', { id: 'gaugeGrad', x1: '0%', y1: '0%', x2: '100%', y2: '0%' });
+  grad.appendChild(createSVG('stop', { offset: '0%', 'stop-color': '#764ba2' }));
+  grad.appendChild(createSVG('stop', { offset: '50%', 'stop-color': '#9b59b6' }));
+  grad.appendChild(createSVG('stop', { offset: '100%', 'stop-color': '#667eea' }));
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  // Background track
+  const trackPath = arcSlice(cx, cy, outerR, innerR, startAngle, endAngle);
+  const track = createSVG('path', {
+    d: trackPath,
+    fill: 'rgba(255,255,255,0.05)',
+    stroke: 'rgba(255,255,255,0.1)',
+    'stroke-width': '1',
+  });
+  svg.appendChild(track);
+
+  // Tick marks
+  const tickCount = 10;
+  for (let i = 0; i <= tickCount; i++) {
+    const angle = startAngle + (i / tickCount) * (endAngle - startAngle);
+    const t1 = polar(cx, cy, outerR + 4, angle);
+    const t2 = polar(cx, cy, outerR + 12, angle);
+    const tick = createSVG('line', {
+      x1: t1.x, y1: t1.y, x2: t2.x, y2: t2.y,
+      stroke: 'rgba(255,255,255,0.3)', 'stroke-width': i % 5 === 0 ? '2' : '1',
     });
-    label.textContent = item.label;
-    svg.appendChild(label);
+    svg.appendChild(tick);
+  }
 
-    // Bar background
-    const bg = createSVG('rect', {
-      x: pad.left, y, width: chartW, height: barHeight,
-      rx: 4, fill: 'rgba(255,255,255,0.05)',
-    });
-    svg.appendChild(bg);
+  // Colored gauge fill arc (animated later)
+  const fillEndAngle = startAngle + percentage * (endAngle - startAngle);
+  const fillPathD = arcSlice(cx, cy, outerR, innerR, startAngle, startAngle);
+  const fillArc = createSVG('path', {
+    d: fillPathD,
+    fill: 'url(#gaugeGrad)',
+    style: 'transition: d 1.2s ease-out;',
+  });
+  svg.appendChild(fillArc);
 
-    // Bar
-    const bar = createSVG('rect', {
-      x: pad.left, y, height: barHeight,
-      rx: 4, fill: item.color,
-      'data-width': barW,
-    });
-    svg.appendChild(bar);
-    bars.push(bar);
+  // Needle indicator (triangle marker on arc)
+  const needleAngle = startAngle + percentage * (endAngle - startAngle);
+  const needleR = outerR + 6;
+  const needleTip = polar(cx, cy, needleR, needleAngle);
+  const needleBase1 = polar(cx, cy, needleR - 8, needleAngle - 4);
+  const needleBase2 = polar(cx, cy, needleR - 8, needleAngle + 4);
 
-    // Value text
-    const valText = createSVG('text', {
-      x: pad.left + barW + 6, y: y + barHeight / 2 + 4,
-      fill: 'rgba(255,255,255,0.85)', 'font-size': '12', opacity: '0',
-      style: 'transition: opacity 0.5s ease;',
-    });
-    valText.textContent = item.value.toLocaleString();
-    svg.appendChild(valText);
+  const needle = createSVG('polygon', {
+    points: `${needleTip.x},${needleTip.y} ${needleBase1.x},${needleBase1.y} ${needleBase2.x},${needleBase2.y}`,
+    fill: '#fff',
+    stroke: '#9b59b6',
+    'stroke-width': '1.5',
+    style: 'opacity: 0; transition: opacity 0.8s ease 0.4s;',
+  });
+  svg.appendChild(needle);
 
-    // Tooltip events
-    bar.addEventListener('mouseenter', () => {
-      tooltip.innerHTML = `<strong>${item.label}</strong><br/>${item.value.toLocaleString()}`;
-      tooltip.style.opacity = '1';
-      bar.style.opacity = '0.85';
-    });
-    bar.addEventListener('mousemove', (e) => {
-      const rect = svg.getBoundingClientRect();
-      tooltip.style.left = e.clientX - rect.left + 12 + 'px';
-      tooltip.style.top = e.clientY - rect.top - 12 + 'px';
-    });
-    bar.addEventListener('mouseleave', () => {
-      tooltip.style.opacity = '0';
-      bar.style.opacity = '1';
-    });
+  // Center text — ratio
+  const ratioText = createSVG('text', {
+    x: cx, y: cy - 28,
+    'text-anchor': 'middle', fill: '#fff', 'font-size': '28', 'font-weight': '700',
+  });
+  ratioText.textContent = ratioDisplay;
+  svg.appendChild(ratioText);
 
-    // Show value after animation
-    setTimeout(() => {
-      valText.setAttribute('opacity', '1');
-    }, 600 + i * 80);
+  const ratioLabel = createSVG('text', {
+    x: cx, y: cy + 6,
+    'text-anchor': 'middle', fill: 'rgba(255,255,255,0.6)', 'font-size': '12',
+  });
+  ratioLabel.textContent = 'Audit Ratio';
+  svg.appendChild(ratioLabel);
+
+  // Bottom labels
+  const leftLabelX = cx - 70;
+  const rightLabelX = cx + 70;
+  const labelY = cy + 45;
+
+  const doneRect = createSVG('rect', {
+    x: leftLabelX - 6, y: labelY - 12, width: 12, height: 12, rx: 2, fill: '#764ba2',
+  });
+  svg.appendChild(doneRect);
+
+  const doneText = createSVG('text', {
+    x: leftLabelX + 12, y: labelY - 2,
+    fill: 'rgba(255,255,255,0.85)', 'font-size': '11',
+  });
+  doneText.textContent = `Done: ${up.toLocaleString()}`;
+  svg.appendChild(doneText);
+
+  const recRect = createSVG('rect', {
+    x: rightLabelX - 6, y: labelY - 12, width: 12, height: 12, rx: 2, fill: '#667eea',
+  });
+  svg.appendChild(recRect);
+
+  const recText = createSVG('text', {
+    x: rightLabelX + 12, y: labelY - 2,
+    fill: 'rgba(255,255,255,0.85)', 'font-size': '11',
+  });
+  recText.textContent = `Received: ${down.toLocaleString()}`;
+  svg.appendChild(recText);
+
+  // Tooltip interaction area (invisible overlay over gauge)
+  const hitPath = arcSlice(cx, cy, outerR + 10, innerR - 10, startAngle, endAngle);
+  const hitArea = createSVG('path', {
+    d: hitPath,
+    fill: 'transparent',
+    style: 'cursor: pointer;',
+  });
+  svg.appendChild(hitArea);
+
+  hitArea.addEventListener('mouseenter', () => {
+    tooltip.innerHTML = `<strong>Audit Ratio</strong><br/>Done: ${up.toLocaleString()}<br/>Received: ${down.toLocaleString()}<br/>Ratio: ${ratioDisplay}`;
+    tooltip.style.opacity = '1';
+  });
+  hitArea.addEventListener('mousemove', (e) => {
+    const rect = svg.getBoundingClientRect();
+    tooltip.style.left = e.clientX - rect.left + 12 + 'px';
+    tooltip.style.top = e.clientY - rect.top - 12 + 'px';
+  });
+  hitArea.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = '0';
   });
 
-  animateBars(bars, 900);
+  // Animate fill arc and needle
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fillArc.setAttribute('d', arcSlice(cx, cy, outerR, innerR, startAngle, fillEndAngle));
+      needle.style.opacity = '1';
+    });
+  });
 }
 
 // =================== GRAPH 3: PROJECT XP VERTICAL BARS ===================

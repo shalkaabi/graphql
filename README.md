@@ -55,35 +55,5 @@ A personal profile page built with vanilla HTML, CSS, and JavaScript that consum
 
 ## Hosting on GitHub Pages
 
-Follow these steps to deploy your profile to GitHub Pages:
 
-1. **Create a GitHub repository**
-   - Go to [GitHub](https://github.com) and create a new repository named `graphql-profile` (or any name you prefer).
-   - Make it public so GitHub Pages can access it.
 
-2. **Push your code**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/graphql-profile.git
-   git push -u origin main
-   ```
-
-3. **Enable GitHub Pages**
-   - Go to your repository on GitHub.
-   - Click **Settings** → **Pages** (in the left sidebar).
-   - Under **Source**, select **Deploy from a branch**.
-   - Choose the `main` branch and `/ (root)` folder.
-   - Click **Save**.
-
-4. **Access your live site**
-   - Wait a minute for the deployment to complete.
-   - Your site will be available at: `https://YOUR_USERNAME.github.io/graphql-profile/`
-   - You can find the exact URL in the GitHub Pages settings.
-
-5. **Update API URLs (if needed)**
-   - If your API requires specific CORS origins, ensure `https://YOUR_USERNAME.github.io` is allowed, or use a proxy.
-
-> **Note**: Since this project makes API calls to `learn.reboot01.com`, ensure the API allows CORS requests from your GitHub Pages domain. If you encounter CORS issues, consider using a serverless proxy or hosting on a platform with backend support.

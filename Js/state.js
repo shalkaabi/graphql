@@ -76,9 +76,11 @@ const detailedDataQuery = `
 
     skill: transaction(
       where: { userId: { _eq: $userId }, type: { _like: "skill_%" } }
+      order_by: { amount: desc }
     ) {
       type
       amount
+      createdAt
     }
 
     level: event_user(

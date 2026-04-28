@@ -566,10 +566,7 @@ function drawSkillsRadar(skillsData) {
   const tooltip = document.getElementById('radarTooltip');
   svg.innerHTML = '';
 
-  const allowedSkills = ['Go', 'Prog', 'Front', 'Back', 'Js', 'Algo'];
-  const allowedSkillsLower = allowedSkills.map((s) => s.toLowerCase());
-
-  // Aggregate real skill amounts from the API by type
+  // Aggregate real skill amounts from the API by type (max per skill)
   const skillMap = {};
   (skillsData || []).forEach((s) => {
     let type = s.type;
@@ -580,27 +577,30 @@ function drawSkillsRadar(skillsData) {
       type = type.slice(6);
     }
 
-    // Normalize case and match against allowed skills
-    const typeLower = type.toLowerCase();
-    const matchedIndex = allowedSkillsLower.indexOf(typeLower);
-    if (matchedIndex === -1) return; // Skip unknown skill types
-
-    const normalizedType = allowedSkills[matchedIndex];
-
-    if (!skillMap[normalizedType]) skillMap[normalizedType] = { xp: 0, count: 0 };
-    skillMap[normalizedType].xp += s.amount || 0;
+    const normalizedType = type.toLowerCase();
+    if (!skillMap[normalizedType]) skillMap[normalizedType] = { xp: 0, count: 0, display: type };
+    skillMap[normalizedType].xp = Math.max(skillMap[normalizedType].xp, s.amount || 0);
     skillMap[normalizedType].count += 1;
   });
 
-  // Build skills array ensuring all 6 exist (even with 0 XP)
-  const skills = allowedSkills.map((name) => {
-    const data = skillMap[name];
-    return {
-      name,
-      xp: data ? data.xp : 0,
-      count: data ? data.count : 0,
-    };
-  });
+  // Debug: log raw and processed skill data
+  console.log('Raw skills data:', skillsData);
+  console.log('Processed skill map:', skillMap);
+
+  // Build skills array dynamically from discovered skill types
+  const skills = Object.entries(skillMap).map(([key, data]) => ({
+    name: data.display.charAt(0).toUpperCase() + data.display.slice(1),
+    xp: data.xp,
+    count: data.count,
+  }));
+
+  // If no skills found, show empty state
+  if (skills.length === 0) {
+    const text = createSVG('text', { x: 250, y: 175, 'text-anchor': 'middle', fill: '#fff', 'font-size': '16' });
+    text.textContent = 'No skill data available';
+    svg.appendChild(text);
+    return;
+  }
 
   const width = 500;
   const height = 350;

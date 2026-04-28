@@ -35,7 +35,7 @@ A personal profile page built with vanilla HTML, CSS, and JavaScript that consum
 │   ├── state.js        # Shared state management, JWT parser, 
 │   ├── login.js        # Login form handler
 │   ├── main.js         # Main entry logic
-│   └── graph.js        # Profile data fetching and SVG graph rendering
+│   └── graph.js        # Profile data fetching and SVG graph 
 └── README.md
 ```
 

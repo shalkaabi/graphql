@@ -80,6 +80,14 @@ const detailedDataQuery = `
       type
       amount
     }
+
+    level: event_user(
+      where: { userId: { _eq: $userId } }
+      order_by: { level: desc }
+      limit: 1
+    ) {
+      level
+    }
   }
 `;
 

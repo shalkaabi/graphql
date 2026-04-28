@@ -199,15 +199,15 @@ function drawAuditGraph(up, down) {
     { label: 'Audits Received', value: down, color: '#f44336' },
   ];
 
-  const width = 360;
+  const width = 400;
   const height = 300;
-  const pad = { top: 40, right: 40, bottom: 30, left: 140 };
+  const pad = { top: 40, right: 40, bottom: 30, left: 100 };
   const chartW = width - pad.left - pad.right;
   const chartH = height - pad.top - pad.bottom;
 
   const maxVal = Math.max(up, down) || 1;
-  const barHeight = (chartH / data.length) * 0.3;
-  const barGap = (chartH / data.length) * 0.2;
+  const barHeight = (chartH / data.length) * 0.2;
+  const barGap = (chartH / data.length) * 0.1;
 
   const bars = [];
 
@@ -270,17 +270,6 @@ function drawAuditGraph(up, down) {
     }, 600 + i * 80);
   });
 
-  // Legend
-  const legendY = height - 15;
-  data.forEach((item, i) => {
-    const x = pad.left + i * 120;
-    const rect = createSVG('rect', { x, y: legendY, width: 12, height: 12, rx: 3, fill: item.color });
-    svg.appendChild(rect);
-    const text = createSVG('text', { x: x + 18, y: legendY + 10, fill: 'rgba(255,255,255,0.9)', 'font-size': '11' });
-    text.textContent = `${item.label} (${item.value.toLocaleString()})`;
-    svg.appendChild(text);
-  });
-
   animateBars(bars, 900);
 }
 
@@ -315,11 +304,14 @@ function drawProjectGraph(projectData) {
     const y = pad.top + chartH - barH;
 
     // Label
+    const labelX = x + barWidth / 2;
+    const labelY = height - pad.bottom + 15;
     const label = createSVG('text', {
-      x: x + barWidth / 2, y: height - pad.bottom + 15,
-      'text-anchor': 'middle', fill: 'rgba(255,255,255,0.85)', 'font-size': '10',
+      x: labelX, y: labelY,
+      'text-anchor': 'middle', fill: 'rgba(255,255,255,0.85)', 'font-size': '8',
+      transform: `rotate(-45, ${labelX}, ${labelY})`,
     });
-    label.textContent = name.length > 10 ? name.slice(0, 8) + '…' : name;
+    label.textContent = name.length > 8 ? name.slice(0, 6) + '…' : name;
     svg.appendChild(label);
 
     // Bar background
@@ -516,11 +508,11 @@ function drawSkillsRadar(skillsData) {
     };
   });
 
-  const width = 600;
-  const height = 420;
+  const width = 500;
+  const height = 350;
   const cx = width / 2;
   const cy = height / 2;
-  const maxRadius = 130;
+  const maxRadius = 110;
   const levels = 5;
 
   const maxXP = Math.max(...skills.map((s) => s.xp), 1);

@@ -44,8 +44,7 @@ async function loadData() {
 
     renderUser(user);
     renderXP(detailedData.xp || []);
-    renderAudits(detailedData.up || [], detailedData.down || [], user.auditRatio);
-    renderResults(detailedData.result || []);
+    renderAudits(detailedData.up || [], detailedData.down || [], user.auditRatio, detailedData.level || [], detailedData.xp || []);
     renderProjectXP(detailedData.xp || []);
     renderPiscineStats(detailedData.progress || [], detailedData.result || []);
 
@@ -80,29 +79,22 @@ function renderXP(xpTransactions) {
   drawXPGraph(xpTransactions);
 }
 
-function renderAudits(upTransactions, downTransactions, serverAuditRatio) {
+function renderAudits(upTransactions, downTransactions, serverAuditRatio, levelData, xpTransactions) {
   const up = upTransactions.reduce((sum, t) => sum + t.amount, 0);
   const down = downTransactions.reduce((sum, t) => sum + t.amount, 0);
   const ratio = serverAuditRatio ?? (down > 0 ? (up / down).toFixed(2) : up > 0 ? '∞' : '0');
 
-  document.getElementById('auditRatio').textContent = ratio;
-  document.getElementById('auditUp').textContent = up.toLocaleString();
-  document.getElementById('auditDown').textContent = down.toLocaleString();
+  // Populate audit distribution table
+  const level = levelData?.[0]?.level ?? '—';
+  const totalXP = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalXPkb = totalXP > 0 ? (totalXP / 1000).toFixed(2) + ' KB' : '0 KB';
+
+  document.getElementById('levelCell').textContent = level;
+  const ratioDecimal = typeof ratio === 'number' ? ratio.toFixed(2) : parseFloat(ratio).toFixed(2);
+  document.getElementById('auditRatioCell').textContent = ratioDecimal;
+  document.getElementById('xpKbCell').textContent = totalXPkb;
 
   drawAuditGraph(up, down);
-}
-
-function renderResults(results) {
-  let pass = 0;
-  let fail = 0;
-  results.forEach((r) => {
-    if (r.grade >= 1) pass++;
-    else fail++;
-  });
-
-  document.getElementById('passCount').textContent = pass;
-  document.getElementById('failCount').textContent = fail;
-  document.getElementById('ratioDisplay').textContent = `${pass} / ${fail}`;
 }
 
 function renderProjectXP(xpTransactions) {

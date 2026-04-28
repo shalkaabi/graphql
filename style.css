@@ -334,7 +334,6 @@ body.guest-mode {
 
 .card:hover {
   transform: none;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
 }
 
 /* Chart containers */
@@ -403,6 +402,48 @@ body.guest-mode {
   background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(255, 152, 0, 0.15));
 }
 
+/* Audit Distribution Table */
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.audit-table thead {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.audit-table th {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.audit-table tbody tr {
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.3s ease;
+}
+
+.audit-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.audit-table td {
+  font-weight: 500;
+}
+
 /* Responsive graph sizing */
 @media (max-width: 768px) {
   .profile-container {
@@ -423,6 +464,12 @@ body.guest-mode {
   .big-stat {
     font-size: 1.5rem;
   }
+
+  .audit-table th,
+  .audit-table td {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* Loading / error states inside cards */
@@ -440,6 +487,5 @@ body.guest-mode {
 
 .card .btn:hover {
   transform: none;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 

@@ -350,6 +350,12 @@ body.guest-mode {
   color: #764ba2;
 }
 
+.small-stat {
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
 .full-width {
   grid-column: 1 / -1;
 }

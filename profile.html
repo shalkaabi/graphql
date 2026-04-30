@@ -25,27 +25,25 @@
     <!-- SECTION 1: User Info, Total XP, Audit Summary -->
     <section class="section-container section-1">
       <!-- USER INFO -->
-      <section class="card">
+      <section class="card full-width">
         <h3><i class="bx bx-id-card"></i> User Info</h3>
         <p>ID: <span id="userId">—</span></p>
         <p>name: <span id="userLogin">—</span></p>
       </section>
 
-      <!-- XP -->
-      <section class="card">
-        <h3><i class="bx bx-trophy"></i> Total XP</h3>
-        <p class="big-stat" id="totalXP">—</p>
-      </section>
 
-      <!-- AUDIT SUMMARY TABLE -->
-      <section class="card stats">
+
+<!-- AUDIT SUMMARY TABLE -->
+      <section class="card stats full-width">
         <h3><i class="bx bx-table"></i> Audit Summary</h3>
         <table class="audit-table" id="auditTable">
           <thead>
             <tr>
               <th>Level</th>
               <th>Audit Ratio</th>
-              <th>Total XP (KB)</th>
+              <th>Total XP</th>
+              <th>Up XP</th>
+              <th>Down XP</th>
             </tr>
           </thead>
           <tbody>
@@ -53,6 +51,8 @@
               <td id="levelCell">—</td>
               <td id="auditRatioCell">—</td>
               <td id="xpKbCell">—</td>
+              <td id="upXPCell">—</td>
+              <td id="downXPCell">—</td>
             </tr>
           </tbody>
         </table>

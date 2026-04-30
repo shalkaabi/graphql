@@ -1,3 +1,5 @@
+// =================== TOKEN VALIDATION ===================
+
 token = localStorage.getItem('token');
 if (!token) {
   window.location.href = 'index.html';
@@ -26,30 +28,65 @@ function setupLogout() {
   });
 }
 
-// =================== DATA FETCHING ===================
+// =================== RENDER FUNCTIONS ===================
+
+function renderUser(user) {
+  document.getElementById('userId').textContent = user.id ?? '—';
+  document.getElementById('userLogin').textContent = user.login ?? '—';
+  document.getElementById('welcomeText').textContent = `Welcome, ${user.login || 'User'}`;
+}
+
+function renderTotalXP(totalXP) {
+  const xp = Number(totalXP) || 0;
+  const xpKb = xp > 0 ? (xp / 1000).toFixed(2) + ' KB' : '0 KB';
+  const xpNum = xp > 0 ? xp.toLocaleString() : '0';
+  document.getElementById('totalXP').innerHTML = `${xpNum} XP<br><span class="small-stat">${xpKb}</span>`;
+}
+
+function renderAudit(level, ratio, xpKb, upXP, downXP) {
+  document.getElementById('levelCell').textContent = level;
+  const ratioDecimal = typeof ratio === 'number' ? ratio.toFixed(2) : parseFloat(ratio).toFixed(2);
+  document.getElementById('auditRatioCell').textContent = ratioDecimal;
+  document.getElementById('xpKbCell').textContent = xpKb;
+  document.getElementById('upXPCell').textContent = upXP > 0 ? upXP.toLocaleString() : '0';
+  document.getElementById('downXPCell').textContent = downXP > 0 ? downXP.toLocaleString() : '0';
+}
+
+function renderPiscine(pass, fail, total) {
+  document.getElementById('piscinePass').textContent = pass;
+  document.getElementById('piscineFail').textContent = fail;
+  document.getElementById('piscineTotal').textContent = total;
+}
+
+// =================== MAIN LOAD FUNCTION ===================
 
 async function loadData() {
   try {
-    // Demonstrate normal query
-    const normalData = await fetchGraphQL(normalUserQuery);
-    const normalUser = normalData?.user?.[0];
-
-    // Demonstrate argument + nested query
-    const detailedData = await fetchGraphQL(detailedDataQuery, { userId: Number(userId) });
-    const user = detailedData?.user?.[0] || normalUser;
-
+    // Get current user
+    const user = await fetchUser();
+    
     if (!user) {
       throw new Error('User not found');
     }
 
-    renderUser(user);
-    renderXP(detailedData.xp || []);
-    renderAudits(detailedData.up || [], detailedData.down || [], user.auditRatio, detailedData.level || [], detailedData.xp || []);
-    renderProjectXP(detailedData.xp || []);
-    renderPiscineStats(detailedData.progress || [], detailedData.result || []);
+    // Get detailed user data
+    const userData = await fetchUserData(userId);
+    const auditData = await fetchAuditData(userId);
+    const piscineData = await fetchPiscineStats(userId);
+    const projectData = await fetchProjectXP(userId);
+    const skillsData = await fetchSkills(userId);
 
-    // Top skills radar chart
-    drawSkillsRadar(detailedData.skill || []);
+    // Render to HTML
+    renderUser(user);
+    renderAudit(auditData.level, auditData.ratio, auditData.totalXPkb, auditData.up, auditData.down);
+    renderPiscine(piscineData.pass, piscineData.fail, piscineData.total);
+
+    // Render graphs
+    renderXP(auditData.xp);
+    drawAuditGraph(auditData.up, auditData.down);
+    drawProjectGraph(projectData);
+    drawPiscineGraph(piscineData.pass, piscineData.fail, piscineData.exerciseAttempts);
+    drawSkillsRadar(skillsData);
 
     setupLogout();
   } catch (err) {
@@ -65,91 +102,9 @@ async function loadData() {
   }
 }
 
-// =================== RENDER HELPERS ===================
-
-function renderUser(user) {
-  document.getElementById('userId').textContent = user.id ?? '—';
-  document.getElementById('userLogin').textContent = user.login ?? '—';
-  document.getElementById('welcomeText').textContent = `Welcome, ${user.login || 'User'}`;
-}
-
+// Helper for XP graph (calls graph.js)
 function renderXP(xpTransactions) {
-  const total = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
-  document.getElementById('totalXP').textContent = total.toLocaleString() + ' XP';
   drawXPGraph(xpTransactions);
-}
-
-function renderAudits(upTransactions, downTransactions, serverAuditRatio, levelData, xpTransactions) {
-  const up = upTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const down = downTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const ratio = serverAuditRatio ?? (down > 0 ? (up / down).toFixed(2) : up > 0 ? '∞' : '0');
-
-  // Populate audit distribution table
-  const level = levelData?.[0]?.level ?? '—';
-  const totalXP = xpTransactions.reduce((sum, t) => sum + t.amount, 0);
-  const totalXPkb = totalXP > 0 ? (totalXP / 1000).toFixed(2) + ' KB' : '0 KB';
-
-  document.getElementById('levelCell').textContent = level;
-  const ratioDecimal = typeof ratio === 'number' ? ratio.toFixed(2) : parseFloat(ratio).toFixed(2);
-  document.getElementById('auditRatioCell').textContent = ratioDecimal;
-  document.getElementById('xpKbCell').textContent = totalXPkb;
-
-  drawAuditGraph(up, down);
-}
-
-function renderProjectXP(xpTransactions) {
-  const projectMap = {};
-  xpTransactions.forEach((t) => {
-    const name = t.object?.name || t.path?.split('/').pop() || 'Unknown';
-    projectMap[name] = (projectMap[name] || 0) + t.amount;
-  });
-
-  const sorted = Object.entries(projectMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  drawProjectGraph(sorted);
-}
-
-function renderPiscineStats(progressData, resultData) {
-  // Combine progress and result data for piscine entries
-  const piscinePaths = ['piscine-go', 'piscine-js'];
-  const piscineItems = [];
-
-  [...progressData, ...resultData].forEach((item) => {
-    const path = item.path || '';
-    const isPiscine = piscinePaths.some((p) => path.includes(p));
-    if (isPiscine) {
-      piscineItems.push(item);
-    }
-  });
-
-  // Calculate stats
-  let pass = 0;
-  let fail = 0;
-  const exerciseAttempts = {};
-
-  piscineItems.forEach((item) => {
-    const name = item.object?.name || item.path?.split('/').pop() || 'Unknown';
-    if (!exerciseAttempts[name]) {
-      exerciseAttempts[name] = { attempts: 0, pass: 0, fail: 0 };
-    }
-    exerciseAttempts[name].attempts++;
-    if (item.grade >= 1) {
-      pass++;
-      exerciseAttempts[name].pass++;
-    } else {
-      fail++;
-      exerciseAttempts[name].fail++;
-    }
-  });
-
-  const total = pass + fail;
-  document.getElementById('piscinePass').textContent = pass;
-  document.getElementById('piscineFail').textContent = fail;
-  document.getElementById('piscineTotal').textContent = total;
-
-  drawPiscineGraph(pass, fail, exerciseAttempts);
 }
 
 // =================== INIT ===================

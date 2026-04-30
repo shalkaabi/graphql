@@ -1,5 +1,7 @@
 // =================== SVG UTILITIES ===================
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
 function createSVG(el, attrs = {}) {
   const element = document.createElementNS(SVG_NS, el);
   for (const [k, v] of Object.entries(attrs)) {
@@ -581,18 +583,18 @@ function drawSkillsRadar(skillsData) {
     if (!skillMap[normalizedType]) skillMap[normalizedType] = { xp: 0, count: 0, display: type };
     skillMap[normalizedType].xp = Math.max(skillMap[normalizedType].xp, s.amount || 0);
     skillMap[normalizedType].count += 1;
-  });
+});
 
-  // Debug: log raw and processed skill data
-  console.log('Raw skills data:', skillsData);
-  console.log('Processed skill map:', skillMap);
-
-  // Build skills array dynamically from discovered skill types
-  const skills = Object.entries(skillMap).map(([key, data]) => ({
-    name: data.display.charAt(0).toUpperCase() + data.display.slice(1),
-    xp: data.xp,
-    count: data.count,
-  }));
+// Build skills array dynamically from discovered skill types
+  // Filter out skills with 0 XP and sort by XP descending
+  const skills = Object.entries(skillMap)
+    .filter(([key, data]) => data.xp > 0)
+    .map(([key, data]) => ({
+      name: data.display.charAt(0).toUpperCase() + data.display.slice(1).replace(/-/g, ' '),
+      xp: data.xp,
+      count: data.count,
+    }))
+    .sort((a, b) => b.xp - a.xp);
 
   // If no skills found, show empty state
   if (skills.length === 0) {
